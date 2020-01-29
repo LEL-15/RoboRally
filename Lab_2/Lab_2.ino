@@ -37,18 +37,19 @@ void measure_30cm_speed() {
     readSensors();
   }
   //sparki.beep(); // beep!
+  unsigned long t2 = millis();
+  unsigned long t_diff = t2-t;
   sparki.moveStop();
-  t= t -millis();
   sparki.clearLCD();
   sparki.print("Time: ");
   sparki.println(t);
   sparki.updateLCD();
-  Serial.println(t);
+  Serial.println(t_diff);
 }
 
 
 void updateOdometry() {
-  //4294967294
+  //10357
   // TODO
   
 }
