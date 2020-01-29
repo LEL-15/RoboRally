@@ -12,6 +12,7 @@ const int threshold = 700;
 int line_left = 1000;
 int line_center = 1000;
 int line_right = 1000;
+float speed_motors = 2.899 //cm per sec
 
 float pose_x = 0., pose_y = 0., pose_theta = 0.;
 
@@ -48,7 +49,7 @@ void measure_30cm_speed() {
 }
 
 
-void updateOdometry() {
+void updateOdometry(int right_move, int left_move) {
   //10357
   // TODO
   
@@ -70,7 +71,30 @@ void loop() {
   
   switch (current_state) {
     case CONTROLLER_FOLLOW_LINE:
+      int right_move = 0;
+      int left_move = 0;
       // TODO
+      if ( lineLeft < threshold ) // if line is below left line sensor
+      {  
+        sparki.moveLeft(); // turn left
+        right_move = -1;
+        left_move = 1;
+      }
+    
+      else if ( lineRight < threshold ) // if line is below right line sensor
+      {  
+        sparki.moveRight(); // turn right
+        left_move = -1;
+        right_move = 1;
+      }
+    
+      // if the center line sensor is the only one reading a line
+      else if ( (lineCenter < threshold) && (lineLeft > threshold) && (lineRight > threshold) )
+      {
+        sparki.moveForward(); // move forward
+        right_move = 1;
+        left_move = 1;
+      }
       break;
     case CONTROLLER_DISTANCE_MEASURE:
       measure_30cm_speed();
