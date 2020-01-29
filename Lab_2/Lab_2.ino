@@ -13,8 +13,8 @@ int lineLeft = 1000;
 int lineCenter = 1000;
 int lineRight = 1000;
 float speed_motors = 2.899; //cm per sec
-int right_move = 0;
-int left_move = 0;
+//-1 if right, 1 if left, 0 if straight
+int movement;
 
 float pose_x = 0., pose_y = 0., pose_theta = 0;
 
@@ -80,28 +80,24 @@ void loop() {
       //Start time in loop
       start = millis();
       readSensors();
-      right_move = 0;
-      left_move = 0;
+      movement = 0;
       if ( lineLeft < threshold ) // if line is below left line sensor
       {  
         sparki.moveLeft(); // turn left
-        right_move = -1;
-        left_move = 1;
+        movement = 1;
       }
     
       else if ( lineRight < threshold ) // if line is below right line sensor
       {  
         sparki.moveRight(); // turn right
-        left_move = -1;
-        right_move = 1;
+        movement = -1;
       }
     
       // if the center line sensor is the only one reading a line
       else if ( (lineCenter < threshold) && (lineLeft > threshold) && (lineRight > threshold) )
       {
         sparki.moveForward(); // move forward
-        right_move = 1;
-        left_move = 1;
+        movement = 0;
       }
       updateOdometry();
       displayOdometry();
