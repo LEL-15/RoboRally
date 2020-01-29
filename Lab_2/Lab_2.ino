@@ -39,6 +39,12 @@ void updateOdometry() {
 
 void displayOdometry() {
   // TODO
+  sparki.print("X displacement: " 
+  sparki.println(pose_x);)
+  sparki.print("Y displacement: " 
+  sparki.println(pose_y);)
+  sparki.print("Z orientation " 
+  sparki.println(pose_theta);)
 }
 
 void loop() {
