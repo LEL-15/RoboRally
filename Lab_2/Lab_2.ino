@@ -5,6 +5,9 @@
 // Program States
 #define CONTROLLER_FOLLOW_LINE 1
 #define CONTROLLER_DISTANCE_MEASURE 2
+#define CYCLE_TIME .100
+#define SPEED .02899
+#define AXEL .084
 
 
 int current_state = CONTROLLER_FOLLOW_LINE; // Change this variable to determine which controller to run
@@ -12,7 +15,6 @@ const int threshold = 500;
 int lineLeft = 1000;
 int lineCenter = 1000;
 int lineRight = 1000;
-float speed_motors = 2.899; //cm per sec
 //-1 if right, 1 if left, 0 if straight
 int movement;
 
@@ -54,17 +56,19 @@ void measure_30cm_speed() {
 void updateOdometry() {
   //10357
   // TODO
-  
+  pose_theta += (2*movement*SPEED*CYCLE_TIME)/AXEL;
+  pose_x += cos(pose_theta)*SPEED*CYCLE_TIME;
+  pose_y += sin(pose_theta)*SPEED*CYCLE_TIME;
 }
 
 void displayOdometry() {
   // TODO
-  sparki.print("X displacement: "); 
-  sparki.println(pose_x);
-  sparki.print("Y displacement: ");
-  sparki.println(pose_y);
-  sparki.print("Z orientation "); 
-  sparki.println(pose_theta);
+  Serial.print("X displacement: "); 
+  Serial.println(pose_x);
+  Serial.print("Y displacement: ");
+  Serial.println(pose_y);
+  Serial.print("Z orientation "); 
+  Serial.println(pose_theta);
 }
 
 void loop() {
