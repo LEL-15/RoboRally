@@ -1,4 +1,4 @@
-#include <sparki.h>
+#include <Sparki.h>
 
 #define CYCLE_TIME .100  // seconds
 
@@ -7,7 +7,7 @@
 #define CONTROLLER_DISTANCE_MEASURE 2
 
 
-int current_state = CONTROLLER_FOLLOW_LINE; // Change this variable to determine which controller to run
+int current_state = CONTROLLER_DISTANCE_MEASURE; // Change this variable to determine which controller to run
 const int threshold = 700;
 int line_left = 1000;
 int line_center = 1000;
@@ -19,6 +19,7 @@ void setup() {
   pose_x = 0.;
   pose_y = 0.;
   pose_theta = 0.;
+  Serial.begin(9600);
 }
 
 void readSensors() {
@@ -30,21 +31,36 @@ void readSensors() {
 
 void measure_30cm_speed() {
   // TODO
+  unsigned long t = millis();
+  while(!(line_left < threshold && line_center < threshold && line_right < threshold)){
+    sparki.moveForward();
+    readSensors();
+  }
+  //sparki.beep(); // beep!
+  sparki.moveStop();
+  t= t -millis();
+  sparki.clearLCD();
+  sparki.print("Time: ");
+  sparki.println(t);
+  sparki.updateLCD();
+  Serial.println(t);
 }
 
 
 void updateOdometry() {
+  //4294967294
   // TODO
+  
 }
 
 void displayOdometry() {
   // TODO
-  sparki.print("X displacement: " 
-  sparki.println(pose_x);)
-  sparki.print("Y displacement: " 
-  sparki.println(pose_y);)
-  sparki.print("Z orientation " 
-  sparki.println(pose_theta);)
+  sparki.print("X displacement: "); 
+  sparki.println(pose_x);
+  sparki.print("Y displacement: ");
+  sparki.println(pose_y);
+  sparki.print("Z orientation "); 
+  sparki.println(pose_theta);
 }
 
 void loop() {
