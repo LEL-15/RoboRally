@@ -82,17 +82,18 @@ void loop() {
   switch (current_state) {
     case CONTROLLER_FOLLOW_LINE:
       //Start time in loop
-      start = millis();
       readSensors();
       movement = 0;
       if ( lineLeft < threshold ) // if line is below left line sensor
       {  
+        start = millis();
         sparki.moveLeft(); // turn left
         movement = 1;
       }
     
       else if ( lineRight < threshold ) // if line is below right line sensor
       {  
+        start = millis();
         sparki.moveRight(); // turn right
         movement = -1;
       }
@@ -100,14 +101,16 @@ void loop() {
       // if the center line sensor is the only one reading a line
       else if ( (lineCenter < threshold) && (lineLeft > threshold) && (lineRight > threshold) )
       {
+        start = millis();
         sparki.moveForward(); // move forward
         movement = 0;
       }
-      updateOdometry();
-      displayOdometry();
       end_loop = millis();
       time_loop = end_loop - start;
       delay (100-time_loop);
+      sparki.moveStop();
+      updateOdometry();
+      displayOdometry();
       break;
     case CONTROLLER_DISTANCE_MEASURE:
       measure_30cm_speed();
