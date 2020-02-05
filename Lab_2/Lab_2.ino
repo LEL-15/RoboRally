@@ -17,6 +17,7 @@ int lineCenter = 1000;
 int lineRight = 1000;
 //-1 if right, 1 if left, 0 if straight
 int movement;
+bool rst = false;
 
 float pose_x = 0., pose_y = 0., pose_theta = 0;
 
@@ -56,9 +57,25 @@ void measure_30cm_speed() {
 void updateOdometry() {
   //10357
   // TODO
-  pose_theta += (2*movement*SPEED*CYCLE_TIME)/AXEL;
-  pose_x += cos(pose_theta)*SPEED*CYCLE_TIME;
-  pose_y += sin(pose_theta)*SPEED*CYCLE_TIME;
+  if(rst)
+  {
+    pose_theta = 0;
+    pose_x = 0;
+    pose_y = 0;
+    rst = false;
+  }
+  else
+  {
+    if(movement != 0)
+    {
+      pose_theta += (2*movement*SPEED*CYCLE_TIME)/AXEL;
+    }
+    else
+    {
+      pose_x += cos(pose_theta)*SPEED*CYCLE_TIME;
+      pose_y += sin(pose_theta)*SPEED*CYCLE_TIME;
+    }
+  }
 }
 
 void displayOdometry() {
@@ -84,7 +101,14 @@ void loop() {
       //Start time in loop
       readSensors();
       movement = 0;
-      if ( lineLeft < threshold ) // if line is below left line sensor
+      if ( (lineCenter < threshold) && (lineLeft < threshold) && (lineRight < threshold) )
+      {
+        start = millis();
+        sparki.moveForward();
+        movement = 0;
+        rst = true;
+      }
+      else if ( lineLeft < threshold ) // if line is below left line sensor
       {  
         start = millis();
         sparki.moveLeft(); // turn left
@@ -105,6 +129,13 @@ void loop() {
         sparki.moveForward(); // move forward
         movement = 0;
       }
+      
+      else
+      {
+        start = millis();
+        sparki.moveForward();
+        movement = 0;
+      }
       end_loop = millis();
       time_loop = end_loop - start;
       delay (100-time_loop);
@@ -116,7 +147,5 @@ void loop() {
       measure_30cm_speed();
       break;
   }
-
-
-  delay(1000*CYCLE_TIME);
+  Serial.println(current_state);
 }
