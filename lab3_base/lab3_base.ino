@@ -1,9 +1,10 @@
 #include <Sparki.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define M_PI 3.14159
 #define ROBOT_SPEED 0.0275 // meters/second
-#define CYCLE_TIME .050 // Default 50ms cycle time
+#define CYCLE_TIME .100 // Default 50ms cycle time
 #define AXEL 0.0857 // meters
 #define WHEEL_RADIUS 0.03 // meters
 #define CONTROLLER_FOLLOW_LINE 1
@@ -48,7 +49,7 @@ float dX  = 0., dTheta = 0.;
 
 //Values we use
 bool rst = false;
-
+int movement = 0;
 float to_radians(double deg) {
   return  deg * 3.1415/180.;
 }
@@ -63,6 +64,7 @@ void setup() {
   pose_theta = 0.;
   left_wheel_rotating = NONE;
   right_wheel_rotating = NONE;
+  Serial.begin(9600);
 
   // Set test cases here!
   set_pose_destination(0.15,0.05, to_radians(135));  // Goal_X_Meters, Goal_Y_Meters, Goal_Theta_Radians
@@ -98,24 +100,32 @@ void updateOdometry(int movement) {
   {
     if(movement != 0)
     {
-      pose_theta += (2*movement*SPEED*CYCLE_TIME)/AXEL;
+      pose_theta += (2*movement*ROBOT_SPEED*CYCLE_TIME)/AXEL;
     }
     else
     {
-      pose_x += cos(pose_theta)*SPEED*CYCLE_TIME;
-      pose_y += sin(pose_theta)*SPEED*CYCLE_TIME;
+      pose_x += cos(pose_theta)*ROBOT_SPEED*CYCLE_TIME;
+      pose_y += sin(pose_theta)*ROBOT_SPEED*CYCLE_TIME;
     }
   }
 
   // Bound theta
-  if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
-  if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
+  //if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
+  //if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
 }
 float updateDistance(){
   return sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_x, 2));
 }
 
 void displayOdometry() {
+  
+  Serial.print("X displacement: "); 
+  Serial.println(pose_x);
+  Serial.print("Y displacement: ");
+  Serial.println(pose_y);
+  Serial.print("Z orientation "); 
+  Serial.println(pose_theta);
+  
   sparki.print("X: ");
   sparki.print(pose_x);
   sparki.print(" Xg: ");
@@ -145,7 +155,7 @@ void loop() {
   float distance = updateDistance();
   unsigned long start_time;
   unsigned long end_time;
-  int movement;
+ 
   float goal_angle;
 
   switch (current_state) {
@@ -176,11 +186,16 @@ void loop() {
       // TODO: Implement solution using moveLeft, moveForward, moveRight functions
       // This case should arrest control of the program's control flow (taking as long as it needs to, ignoring the 100ms loop time)
       // and move the robot to its final destination
-      set_pose_destination(1, 1, M_PI);
+      set_pose_destination(.25, .25, M_PI);
       distance = updateDistance();
       while (distance > .05){
-        goal_angle = atan2(dest_pose_y - pose_y, dest_pose_x - pose_x);
-        while(abs(goal_angle - pose_theta) < M_PI/12){
+        goal_angle = atan((dest_pose_y - pose_y) / (dest_pose_x - pose_x));
+        Serial.println(goal_angle); 
+        Serial.println(abs(goal_angle - pose_theta));
+        while(abs(goal_angle - pose_theta) > M_PI/36){
+          Serial.print("Spinning \n"); 
+          Serial.println(goal_angle); 
+          Serial.println(abs(goal_angle - pose_theta));
           if(goal_angle < pose_theta){
             sparki.moveRight();
             start_time = millis();
@@ -195,15 +210,17 @@ void loop() {
           delay(100 - (end_time - start_time));
           sparki.moveStop();
           updateOdometry(movement);
+          displayOdometry();
         }
         
         sparki.moveForward();
         delay(100);
         sparki.moveStop();
         updateOdometry(0);
+        displayOdometry();
         distance = updateDistance();
       }
-      while (abs(dest_pose_theta - pose_theta) > M_PI/12){
+      while (abs(dest_pose_theta - pose_theta) > M_PI/36){
         if(dest_pose_theta < pose_theta){
             sparki.moveRight();
             start_time = millis();
@@ -218,6 +235,7 @@ void loop() {
           delay(100 - (end_time - start_time));
           sparki.moveStop();
           updateOdometry(movement);
+          displayOdometry();
       }
 
 
