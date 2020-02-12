@@ -186,10 +186,10 @@ void loop() {
       // TODO: Implement solution using moveLeft, moveForward, moveRight functions
       // This case should arrest control of the program's control flow (taking as long as it needs to, ignoring the 100ms loop time)
       // and move the robot to its final destination
-      set_pose_destination(.25, .25, M_PI);
+      set_pose_destination(.25, 0, M_PI/2);
       distance = updateDistance();
       while (distance > .05){
-        goal_angle = atan((dest_pose_y - pose_y) / (dest_pose_x - pose_x));
+        goal_angle = atan2((dest_pose_y - pose_y) , (dest_pose_x - pose_x));
         Serial.println(goal_angle); 
         Serial.println(abs(goal_angle - pose_theta));
         while(abs(goal_angle - pose_theta) > M_PI/36){
