@@ -144,7 +144,6 @@ void loop() {
 
   float distance = updateDistance();
   unsigned long start_time;
-  unsigned long start_move;
   unsigned long end_time;
   int movement;
   float goal_angle;
@@ -192,10 +191,11 @@ void loop() {
             movement = 1;
             start_time = millis();
           }
-          end_time = millis;
+          end_time = millis();
           delay(100 - (end_time - start_time));
           sparki.moveStop();
           updateOdometry(movement);
+        }
         
         sparki.moveForward();
         delay(100);
@@ -208,13 +208,13 @@ void loop() {
             sparki.moveRight();
             start_time = millis();
             movement = -1;
-          }
-          else{
+         }
+         else{
             sparki.moveLeft();
             movement = 1;
             start_time = millis();
           }
-          end_time = millis;
+          end_time = millis();
           delay(100 - (end_time - start_time));
           sparki.moveStop();
           updateOdometry(movement);
