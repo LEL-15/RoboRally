@@ -147,5 +147,4 @@ void loop() {
       measure_30cm_speed();
       break;
   }
-  Serial.println(current_state);
 }
