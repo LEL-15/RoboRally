@@ -20,6 +20,8 @@ float P2 = .1;
 float P3 = .1;
 float phiLeft = 0;
 float phiRight = 0;
+float phiLeftRatio = 0;
+float phiRightRatio = 0;
 
 // Line following configuration variables
 const int threshold = 700;
@@ -28,7 +30,7 @@ int line_center = 1000;
 int line_right = 1000;
 
 // Controller and dTheta update rule settings
-const int current_state = CONTROLLER_GOTO_POSITION_PART2;
+int current_state = CONTROLLER_GOTO_POSITION_PART3;
 
 // Odometry bookkeeping
 float orig_dist_to_goal = 0.0;
@@ -72,7 +74,7 @@ void setup() {
   Serial.begin(9600);
 
   // Set test cases here!
-  set_pose_destination(0.15,0.05, to_radians(135));  // Goal_X_Meters, Goal_Y_Meters, Goal_Theta_Radians
+  set_pose_destination(.25, 0, M_PI/2);
 }
 
 // Sets target robot pose to (x,y,t) in units of meters (x,y) and radians (t)
@@ -114,10 +116,22 @@ void updateOdometry(int movement) {
     }
   }
 
-  // Bound theta
-  //if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
-  //if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
+  //Bound theta
+  if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
+  if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
 }
+
+void updateOdometry3()
+{
+  float ratio = WHEEL_RADIUS/AXEL;
+  pose_theta += (phiRight*ratio - phiLeft*ratio);
+  pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
+  pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
+
+  if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
+  if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
+}
+
 float updateDistance(){
   return sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_y, 2));
 }
@@ -137,11 +151,13 @@ float feedbackDist()
   return P1*updateDistance();
 }
 
-float feedbackRot(){
+float feedbackRot()
+{
   return P2*updateBearing() + P3*updateHeading();
 }
 
-void updatePhi() {
+void updatePhi() 
+{
   float changeX = feedbackDist();
   float changeTheta = feedbackRot();
   phiLeft = (2*changeX - changeTheta*AXEL)/(2*WHEEL_RADIUS);
@@ -216,7 +232,6 @@ void loop() {
       // TODO: Implement solution using moveLeft, moveForward, moveRight functions
       // This case should arrest control of the program's control flow (taking as long as it needs to, ignoring the 100ms loop time)
       // and move the robot to its final destination
-      set_pose_destination(.25, 0, M_PI/2);
       distance = updateDistance();
       while (distance > .05){
         goal_angle = atan2((dest_pose_y - pose_y) , (dest_pose_x - pose_x));
@@ -271,36 +286,44 @@ void loop() {
 
       break;
     case CONTROLLER_GOTO_POSITION_PART3:
-      //updateOdometry();
       // TODO: Implement solution using motorRotate and proportional feedback controller.
       // sparki.motorRotate function calls for reference:
       //      sparki.motorRotate(MOTOR_LEFT, left_dir, int(left_speed_pct*100.));
       //      sparki.motorRotate(MOTOR_RIGHT, right_dir, int(right_speed_pct*100.));
       updatePhi();
-      if(updateDistance() > .1)
+      updateOdometry3();
+      if(distance > .1)
       {
         P1 = .1;
       }
-      else
+      else if (distance > .03)
       {
         P1 = .1;
       }
-      if(phiLeft > phiRight){
-        phiLeft = 1;
-        phiRight = phiRight/phiLeft;
+      else if(abs(pose_theta - dest_pose_theta) < M_PI/12){
+        current_state = 4;
       }
-      else{
-        phiRight = 1;
-        phiLeft = phiLeft/phiRight;
+      if (current_state == 3){
+        if(phiLeft > phiRight){
+          phiLeftRatio = 1; 
+          phiRightRatio = phiRight/phiLeft;
+        }
+        else{
+          phiRightRatio = 1;
+          phiLeftRatio = phiLeft/phiRight;
+        }
+        sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
+        start_time = millis();
+        sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
+        end_time = millis();
+        delay(100 - (end_time - start_time));
       }
-      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int((phiLeft/phiRight)*100));
-      start_time = millis();
-      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int((phiRight/phiLeft)*100));
-      end_time = millis();
-      delay(100 - (end_time - start_time));
+      break;
+    case 4:
       sparki.moveStop();
       break;
   }
+  
 
   sparki.clearLCD();
   displayOdometry();
