@@ -285,6 +285,14 @@ void loop() {
       {
         P1 = .1;
       }
+      if(phiLeft > phiRight){
+        phiLeft = 1;
+        phiRight = phiRight/phiLeft;
+      }
+      else{
+        phiRight = 1;
+        phiLeft = phiLeft/phiRight;
+      }
       sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int((phiLeft/phiRight)*100));
       start_time = millis();
       sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int((phiRight/phiLeft)*100));
