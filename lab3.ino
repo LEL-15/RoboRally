@@ -118,6 +118,15 @@ void updateOdometry(int movement) {
   //if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
   //if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
 }
+
+void updateOdometry3()
+{
+  float ratio = WHEEL_RADIUS/AXEL;
+  pose_theta += (phiRight*ratio - phiLeft*ratio)*CYCLE_TIME;
+  pose_x += cos(pose_theta)*radius*.5*(phiLeft+phiRight)*CYCLE_TIME;
+  pose_y += sin(pose_theta)*radius*.5*(phiLeft+phiRight)*CYCLE_TIME;
+}
+
 float updateDistance(){
   return sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_y, 2));
 }
