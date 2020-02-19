@@ -15,6 +15,11 @@
 #define NONE 0
 #define BCK -1
 
+float P1 = .1;
+float P2 = .1;
+float P3 = .1;
+float phiLeft = 0;
+float phiRight = 0;
 
 // Line following configuration variables
 const int threshold = 700;
@@ -114,9 +119,34 @@ void updateOdometry(int movement) {
   //if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
 }
 float updateDistance(){
-  return sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_x, 2));
+  return sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_y, 2));
 }
 
+float updateBearing()
+{
+  return atan2((pose_y - dest_pose_y),(pose_x - dest_pose_x)) - dest_pose_theta;
+}
+
+float updateHeading()
+{
+  return (pose_theta - dest_pose_theta);
+}
+
+float feedbackDist()
+{
+  return P1*updateDistance();
+}
+
+float feedbackRot(){
+  return P2*updateBearing() + P3*updateHeading();
+}
+
+void updatePhi() {
+  float changeX = feedbackDist();
+  float changeTheta = feedbackRot();
+  phiLeft = (2*changeX - changeTheta*AXEL)/(2*WHEEL_RADIUS);
+  phiRight = (2*changeX + changeTheta*AXEL)/(2*WHEEL_RADIUS);
+}
 void displayOdometry() {
   
   Serial.print("X displacement: "); 
@@ -246,7 +276,21 @@ void loop() {
       // sparki.motorRotate function calls for reference:
       //      sparki.motorRotate(MOTOR_LEFT, left_dir, int(left_speed_pct*100.));
       //      sparki.motorRotate(MOTOR_RIGHT, right_dir, int(right_speed_pct*100.));
-
+      updatePhi();
+      if(updateDistance() > .1)
+      {
+        P1 = .1;
+      }
+      else
+      {
+        P1 = .1;
+      }
+      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int((phiLeft/phiRight)*100));
+      start_time = millis();
+      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int((phiRight/phiLeft)*100));
+      end_time = millis();
+      delay(100 - (end_time - start_time));
+      sparki.moveStop();
       break;
   }
 
