@@ -7,8 +7,7 @@
 #define CYCLE_TIME .100 // Default 50ms cycle time
 #define AXEL 0.0857 // meters
 #define WHEEL_RADIUS 0.03 // meters
-#define SEC_PER_ROT 9.13
-#define RAD_PER_SEC .68819
+#define SEC_PER_ROT 9.12
 #define CONTROLLER_FOLLOW_LINE 1
 #define CONTROLLER_GOTO_POSITION_PART2 2
 #define CONTROLLER_GOTO_POSITION_PART3 3
@@ -24,6 +23,7 @@ float phiLeft = 0;
 float phiRight = 0;
 float phiLeftRatio = 0;
 float phiRightRatio = 0;
+float RAD_PER_SEC;
 
 // Line following configuration variables
 const int threshold = 700;
@@ -73,6 +73,7 @@ void setup() {
   pose_theta = 0.;
   left_wheel_rotating = NONE;
   right_wheel_rotating = NONE;
+  RAD_PER_SEC = pow(SEC_PER_ROT, -1) * 2 * M_PI;
   Serial.begin(9600);
 
   // Set test cases here!
@@ -133,7 +134,9 @@ void updateOdometry3()
 
 
   //Elly Effort
-  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME);
+  //Radians wheel turn is equal to (max radians per second)*(percent max)*(seconds)
+  //Random /2 thrown in. Are we sure we have wheel radius not diameter? 
+  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME) / 2;
   pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*phiLeftRatio*RAD_PER_SEC*CYCLE_TIME;
   pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*phiRightRatio*RAD_PER_SEC*CYCLE_TIME;
   
@@ -180,6 +183,7 @@ void displayOdometry() {
   Serial.println(pose_y);
   Serial.print("Z orientation "); 
   Serial.println(pose_theta);
+  Serial.println(RAD_PER_SEC);
   
   sparki.print("X: ");
   sparki.print(pose_x);
@@ -303,7 +307,7 @@ void loop() {
       }
       else if (distance > .03)
       {
-        P1 = .1;
+        P1 = .01;
       }
       else if(abs(pose_theta - dest_pose_theta) < M_PI/12){
         current_state = 4;
