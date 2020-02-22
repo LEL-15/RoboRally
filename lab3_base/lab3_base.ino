@@ -7,6 +7,8 @@
 #define CYCLE_TIME .100 // Default 50ms cycle time
 #define AXEL 0.0857 // meters
 #define WHEEL_RADIUS 0.03 // meters
+#define SEC_PER_ROT 9.13
+#define RAD_PER_SEC .68819
 #define CONTROLLER_FOLLOW_LINE 1
 #define CONTROLLER_GOTO_POSITION_PART2 2
 #define CONTROLLER_GOTO_POSITION_PART3 3
@@ -124,10 +126,17 @@ void updateOdometry(int movement) {
 void updateOdometry3()
 {
   float ratio = WHEEL_RADIUS/AXEL;
-  pose_theta += (phiRight*ratio - phiLeft*ratio);
-  pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
-  pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
+  //Old version
+  //pose_theta += (phiRight*ratio - phiLeft*ratio);
+  //pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
+  //pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*(phiLeft+phiRight);
 
+
+  //Elly Effort
+  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME);
+  pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*phiLeftRatio*RAD_PER_SEC*CYCLE_TIME;
+  pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*phiRightRatio*RAD_PER_SEC*CYCLE_TIME;
+  
   if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
   if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
 }
@@ -195,7 +204,7 @@ void displayOdometry() {
 }
 
 void loop() {
-  unsigned long begin_time;
+  unsigned long begin_time = 0;
   unsigned long delay_time;
 
   float distance = updateDistance();
@@ -235,12 +244,7 @@ void loop() {
       distance = updateDistance();
       while (distance > .05){
         goal_angle = atan2((dest_pose_y - pose_y) , (dest_pose_x - pose_x));
-        Serial.println(goal_angle); 
-        Serial.println(abs(goal_angle - pose_theta));
         while(abs(goal_angle - pose_theta) > M_PI/36){
-          Serial.print("Spinning \n"); 
-          Serial.println(goal_angle); 
-          Serial.println(abs(goal_angle - pose_theta));
           if(goal_angle < pose_theta){
             sparki.moveRight();
             start_time = millis();
@@ -292,6 +296,7 @@ void loop() {
       //      sparki.motorRotate(MOTOR_RIGHT, right_dir, int(right_speed_pct*100.));
       updatePhi();
       updateOdometry3();
+      displayOdometry();
       if(distance > .1)
       {
         P1 = .1;
@@ -316,23 +321,23 @@ void loop() {
         start_time = millis();
         sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
         end_time = millis();
-        delay(100 - (end_time - start_time));
+      }
+      end_time = millis();
+      delay_time = end_time - begin_time;
+      if(delay_time < 1000*CYCLE_TIME){
+        delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
+      }
+      else{
+        delay(10);
       }
       break;
+    //Case when robot is at destination after Part3
     case 4:
+      Serial.println("Sparki stopped."); 
       sparki.moveStop();
+      sparki.motorStop(MOTOR_LEFT);
+      sparki.motorStop(MOTOR_RIGHT);
+      delay(10000);
       break;
   }
-  
-
-  sparki.clearLCD();
-  displayOdometry();
-  sparki.updateLCD();
-
-  end_time = millis();
-  delay_time = end_time - begin_time;
-  if (delay_time < 1000*CYCLE_TIME)
-    delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
-  else
-    delay(10);
 }
