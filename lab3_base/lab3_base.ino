@@ -135,7 +135,7 @@ void updateOdometry3()
 
   //Elly Effort
   //Radians wheel turn is equal to (max radians per second)*(percent max)*(seconds)
-  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME);
+  pose_theta += ratio*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio - phiLeftRatio);
   pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
   pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
   
@@ -314,20 +314,29 @@ void loop() {
         current_state = 4;
       }
       if (current_state == 3){
-        if(phiLeft > phiRight){
-          phiLeftRatio = phiLeft/abs(phiLeft)*P1; 
-          phiRightRatio = phiRight/abs(phiLeft)*P1;
-        }
-        else{
-          phiRightRatio = phiRight/abs(phiRight)*P1;
-          phiLeftRatio = phiLeft/abs(phiRight)*P1;
-        }
-        start_time = millis();
-        sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
-        sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
-        end_time = millis();
         updateOdometry3();
         displayOdometry();
+        if(phiLeft >= 0 and phiRight > 0{
+          if(phiLeft > phiRight){
+            phiLeftRatio = 1; 
+            phiRightRatio = phiRight/phiLeft*P1;
+          }
+          else{
+            phiRightRatio = phiRight/abs(phiRight)*P1;
+            phiLeftRatio = phiLeft/abs(phiRight)*P1;
+          }
+        }
+        else{
+          phiLeft = 1;
+          phiRight = 1;
+          if(phiLeft < 0({
+            phiLeft = -1;
+          }
+          if(phiLeft < 0){
+            phiRight = -1;
+          }
+        }
+        
       }
       delay_time = end_time - begin_time;
       if(delay_time < 1000*CYCLE_TIME){
