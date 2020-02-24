@@ -16,14 +16,15 @@
 #define NONE 0
 #define BCK -1
 
-float P1 = .1;
-float P2 = .1;
-float P3 = .1;
+float P1 = 2;
+float P2 = 10;
+float P3 = 0;
 float phiLeft = 0;
 float phiRight = 0;
 float phiLeftRatio = 0;
 float phiRightRatio = 0;
 float RAD_PER_SEC;
+float distance;
 
 // Line following configuration variables
 const int threshold = 700;
@@ -77,7 +78,7 @@ void setup() {
   Serial.begin(9600);
 
   // Set test cases here!
-  set_pose_destination(.25, 0, M_PI/2);
+  set_pose_destination(.25, .25, M_PI/2);
 }
 
 // Sets target robot pose to (x,y,t) in units of meters (x,y) and radians (t)
@@ -187,12 +188,10 @@ void displayOdometry() {
   Serial.println(pose_y);
   Serial.print("Z orientation "); 
   Serial.println(pose_theta);
-  Serial.print("Left Phi"); 
-  Serial.println(phiLeft);
-  Serial.print("Right Phi"); 
-  Serial.println(phiRight);
-  
-  
+  Serial.print("Z goal "); 
+  Serial.println(dest_pose_theta);
+  Serial.print("Distance: "); 
+  Serial.println(distance);
   sparki.print("X: ");
   sparki.print(pose_x);
   sparki.print(" Xg: ");
@@ -219,7 +218,7 @@ void loop() {
   unsigned long begin_time = 0;
   unsigned long delay_time;
 
-  float distance = updateDistance();
+  distance = updateDistance();
   unsigned long start_time;
   unsigned long end_time;
  
@@ -309,19 +308,21 @@ void loop() {
       updatePhi();
       if(distance > .1)
       {
-        P1 = 1;
+        P1 = 2;
       }
-      else if (distance > .03)
+      else if (distance > .075)
       {
-        P1 = .5;
+        P1 = 2;
+        P2 = 0;
+        P3 = 10;
       }
-      else if(abs(pose_theta - dest_pose_theta) < M_PI/12){
+      else if(abs(pose_theta - dest_pose_theta) < M_PI/10){
         current_state = 4;
       }
       if (current_state == 3){
         updateOdometry3();
         displayOdometry();
-        if(phiLeft >= 0 and phiRight >= 0){
+        if(phiLeft > 0 and phiRight > 0){
           if(phiLeft > phiRight){
             phiLeftRatio = 1; 
             phiRightRatio = phiRight/phiLeft;
@@ -334,18 +335,29 @@ void loop() {
         else{
           phiLeftRatio = 1;
           phiRightRatio = 1;
-          if(phiLeftRatio < 0){
+          if(phiLeft <= 0){
             phiLeftRatio = -1;
           }
-          if(phiLeft < 0){
+          if(phiRight <= 0){
             phiRightRatio = -1;
           }
         }
         
       }
       start_time = millis();
-      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
-      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
+      if(phiLeftRatio >= 0){
+        sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));  
+      }
+      else{
+        sparki.motorRotate(MOTOR_LEFT, DIR_CW, abs(int(phiLeftRatio*100)));  
+      }
+      if(phiRightRatio >=0){
+        sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));  
+      }
+      else{
+        sparki.motorRotate(MOTOR_RIGHT, DIR_CCW, abs(int(phiRightRatio*100)));
+      }
+      
       delay_time = end_time - begin_time;
       if(delay_time < 1000*CYCLE_TIME){
         delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
@@ -356,7 +368,7 @@ void loop() {
       break;
     //Case when robot is at destination after Part3
     case 4:
-      Serial.println("Sparki stopped."); 
+      Serial.println("Sparki stopped.");
       sparki.moveStop();
       sparki.motorStop(MOTOR_LEFT);
       sparki.motorStop(MOTOR_RIGHT);
