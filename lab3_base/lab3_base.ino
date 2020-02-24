@@ -182,6 +182,10 @@ void displayOdometry() {
   Serial.println(pose_y);
   Serial.print("Z orientation "); 
   Serial.println(pose_theta);
+  Serial.print("Left Phi"); 
+  Serial.println(phiLeft);
+  Serial.print("Right Phi"); 
+  Serial.println(phiRight);
   
   sparki.print("X: ");
   sparki.print(pose_x);
@@ -311,11 +315,11 @@ void loop() {
       if (current_state == 3){
         if(phiLeft > phiRight){
           phiLeftRatio = 1*P1; 
-          phiRightRatio = phiRight/phiLeft*P1;
+          phiRightRatio = phiRight/abs(phiLeft)*P1;
         }
         else{
           phiRightRatio = 1*P1;
-          phiLeftRatio = phiLeft/phiRight*P1;
+          phiLeftRatio = phiLeft/abs(phiRight)*P1;
         }
         start_time = millis();
         sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
