@@ -138,6 +138,11 @@ void updateOdometry3()
   pose_theta += ratio*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio - phiLeftRatio);
   pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
   pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
+
+  //Gerritt attempt v2
+  //pose_theta += (phiRightRatio - phiLeftRatio)*ROBOT_SPEED*CYCLE_TIME/AXEL;
+  //pose_x += cos(pose_theta)*.5*ROBOT_SPEED*CYCLE_TIME+(phiRightRatio + phiLeftRatio);
+  //pose_y += sin(pose_theta)*.5*ROBOT_SPEED*CYCLE_TIME+(phiRightRatio + phiLeftRatio);
   
   if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
   if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
@@ -149,7 +154,7 @@ float updateDistance(){
 
 float updateBearing()
 {
-  return atan2((dest_pose_y-pose_y),(dest_pose_x - pose_x)) - pose_theta;
+  return atan2((dest_pose_y - pose_y),(dest_pose_x - pose_x)) - pose_theta;
 }
 
 float updateHeading()
