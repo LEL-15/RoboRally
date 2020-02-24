@@ -135,8 +135,7 @@ void updateOdometry3()
 
   //Elly Effort
   //Radians wheel turn is equal to (max radians per second)*(percent max)*(seconds)
-  //Random /2 thrown in. Are we sure we have wheel radius not diameter? 
-  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME) / 2;
+  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME)/4;
   pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*phiLeftRatio*RAD_PER_SEC*CYCLE_TIME;
   pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*phiRightRatio*RAD_PER_SEC*CYCLE_TIME;
   
@@ -183,7 +182,6 @@ void displayOdometry() {
   Serial.println(pose_y);
   Serial.print("Z orientation "); 
   Serial.println(pose_theta);
-  Serial.println(RAD_PER_SEC);
   
   sparki.print("X: ");
   sparki.print(pose_x);
@@ -299,34 +297,33 @@ void loop() {
       //      sparki.motorRotate(MOTOR_LEFT, left_dir, int(left_speed_pct*100.));
       //      sparki.motorRotate(MOTOR_RIGHT, right_dir, int(right_speed_pct*100.));
       updatePhi();
-      updateOdometry3();
-      displayOdometry();
       if(distance > .1)
       {
-        P1 = .1;
+        P1 = 1;
       }
       else if (distance > .03)
       {
-        P1 = .01;
+        P1 = .5;
       }
       else if(abs(pose_theta - dest_pose_theta) < M_PI/12){
         current_state = 4;
       }
       if (current_state == 3){
         if(phiLeft > phiRight){
-          phiLeftRatio = 1; 
-          phiRightRatio = phiRight/phiLeft;
+          phiLeftRatio = 1*P1; 
+          phiRightRatio = phiRight/phiLeft*P1;
         }
         else{
-          phiRightRatio = 1;
-          phiLeftRatio = phiLeft/phiRight;
+          phiRightRatio = 1*P1;
+          phiLeftRatio = phiLeft/phiRight*P1;
         }
-        sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
         start_time = millis();
+        sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
         sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
         end_time = millis();
+        updateOdometry3();
+        displayOdometry();
       }
-      end_time = millis();
       delay_time = end_time - begin_time;
       if(delay_time < 1000*CYCLE_TIME){
         delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
