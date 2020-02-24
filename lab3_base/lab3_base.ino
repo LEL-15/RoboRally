@@ -135,7 +135,7 @@ void updateOdometry3()
 
   //Elly Effort
   //Radians wheel turn is equal to (max radians per second)*(percent max)*(seconds)
-  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME)/4;
+  pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME);
   pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*phiLeftRatio*RAD_PER_SEC*CYCLE_TIME;
   pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*phiRightRatio*RAD_PER_SEC*CYCLE_TIME;
   
@@ -314,11 +314,11 @@ void loop() {
       }
       if (current_state == 3){
         if(phiLeft > phiRight){
-          phiLeftRatio = 1*P1; 
+          phiLeftRatio = phiLeft/abs(phiLeft)*P1; 
           phiRightRatio = phiRight/abs(phiLeft)*P1;
         }
         else{
-          phiRightRatio = 1*P1;
+          phiRightRatio = phiRight/abs(phiRight)*P1;
           phiLeftRatio = phiLeft/abs(phiRight)*P1;
         }
         start_time = millis();
