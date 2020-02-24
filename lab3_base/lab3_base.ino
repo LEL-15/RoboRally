@@ -149,12 +149,12 @@ float updateDistance(){
 
 float updateBearing()
 {
-  return atan2((pose_y - dest_pose_y),(pose_x - dest_pose_x)) - dest_pose_theta;
+  return atan2((dest_pose_y-pose_y),(dest_pose_x - pose_x)) - pose_theta;
 }
 
 float updateHeading()
 {
-  return (pose_theta - dest_pose_theta);
+  return (dest_pose_theta - pose_theta);
 }
 
 float feedbackDist()
@@ -340,7 +340,7 @@ void loop() {
       }
       start_time = millis();
       sparki.motorRotate(MOTOR_LEFT, DIR_CCW, int(phiLeftRatio*100));
-      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiLeftRatio*100));
+      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, int(phiRightRatio*100));
       delay_time = end_time - begin_time;
       if(delay_time < 1000*CYCLE_TIME){
         delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
