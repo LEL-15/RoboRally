@@ -136,8 +136,8 @@ void updateOdometry3()
   //Elly Effort
   //Radians wheel turn is equal to (max radians per second)*(percent max)*(seconds)
   pose_theta += ratio*(phiRightRatio*RAD_PER_SEC*CYCLE_TIME - phiLeftRatio*RAD_PER_SEC*CYCLE_TIME);
-  pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*phiLeftRatio*RAD_PER_SEC*CYCLE_TIME;
-  pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*phiRightRatio*RAD_PER_SEC*CYCLE_TIME;
+  pose_x += cos(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
+  pose_y += sin(pose_theta)*WHEEL_RADIUS*.5*RAD_PER_SEC*CYCLE_TIME*(phiRightRatio + phiLeftRatio);
   
   if (pose_theta > M_PI) pose_theta -= 2.*M_PI;
   if (pose_theta <= -M_PI) pose_theta += 2.*M_PI;
@@ -186,6 +186,7 @@ void displayOdometry() {
   Serial.println(phiLeft);
   Serial.print("Right Phi"); 
   Serial.println(phiRight);
+  
   
   sparki.print("X: ");
   sparki.print(pose_x);
