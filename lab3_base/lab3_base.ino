@@ -316,28 +316,31 @@ void loop() {
       if (current_state == 3){
         updateOdometry3();
         displayOdometry();
-        if(phiLeft >= 0 and phiRight > 0{
+        if(phiLeft >= 0 and phiRight > 0){
           if(phiLeft > phiRight){
-            phiLeftRatio = 1; 
+            phiLeftRatio = 1*P1; 
             phiRightRatio = phiRight/phiLeft*P1;
           }
           else{
-            phiRightRatio = phiRight/abs(phiRight)*P1;
-            phiLeftRatio = phiLeft/abs(phiRight)*P1;
+            phiRightRatio = 1*P1;
+            phiLeftRatio = phiLeft/phiRight*P1;
           }
         }
         else{
-          phiLeft = 1;
-          phiRight = 1;
-          if(phiLeft < 0({
-            phiLeft = -1;
+          phiLeftRatio = 1;
+          phiRightRatio = 1;
+          if(phiLeftRatio < 0){
+            phiLeftRatio = -1;
           }
           if(phiLeft < 0){
-            phiRight = -1;
+            phiRightRatio = -1;
           }
         }
         
       }
+      start_time = millis();
+      sparki.motorRotate(MOTOR_LEFT, DIR_CCW, phiLeftRatio);
+      sparki.motorRotate(MOTOR_RIGHT, DIR_CW, phiRightRatio);
       delay_time = end_time - begin_time;
       if(delay_time < 1000*CYCLE_TIME){
         delay(1000*CYCLE_TIME - delay_time); // each loop takes CYCLE_TIME ms
