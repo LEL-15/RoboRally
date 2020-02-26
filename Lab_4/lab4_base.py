@@ -45,7 +45,7 @@ def main():
         lineLeft = value_array[0]
         lineCenter = value_array[1]
         lineRight = value_array[2]
-        if ((lineCenter < IR_THRESHOLD) && (lineLeft < IR_THRESHOLD) && (lineRight < IR_THRESHOLD) ):
+        if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
             rospy.loginfo("Loop Closure Triggered")
         #Spin left
         else if ( lineLeft < IR_THRESHOLD ):
