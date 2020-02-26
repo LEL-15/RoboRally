@@ -28,6 +28,7 @@ def main():
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
     global pose2d_sparki_odometry
+    global current_state
     global theta, value_array, ping_distance
 
     #TODO: Init your node to register it with the ROS core
@@ -35,17 +36,32 @@ def main():
 
     while not rospy.is_shutdown():
         #TODO: Implement CYCLE TIME
-
+        start_time = int(round(time.time() * 1000))
         #TODO: Implement line following code here
         #      To create a message for changing motor speed, use Float32MultiArray()
         #      (e.g., msg = Float32MultiArray()     msg.data = [1.0,1.0]      publisher.pub(msg))
-
-        #TODO: Implement loop closure here
-        if False:
+        
+        #Reset point
+        if ((lineCenter < threshold) && (lineLeft < threshold) && (lineRight < threshold) ):
             rospy.loginfo("Loop Closure Triggered")
+        #Spin left
+        else if ( lineLeft < threshold ):
+            sparki.moveLeft(); // turn left
+        #spin right
+        elsif( lineRight < threshold ):
+            sparki.moveRight(); // turn right
+            movement = -1;
+
+        #if the center line sensor is the only one reading a line
+        else:
+            sparki.moveForward(); // move forward
+            movement = 0;
 
         #TODO: Implement CYCLE TIME
-        rospy.sleep(0)
+        end_time = int(round(time.time() * 1000));
+        if(end_time - start_time < 50):
+            rospy.sleep((50 - (start_time - end_time)) / 1000);
+        sparki.moveStop();
 
 
 
@@ -119,5 +135,3 @@ def cost(cell_index_from, cell_index_to):
 
 if __name__ == "__main__":
     main()
-
-
