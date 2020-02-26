@@ -25,11 +25,12 @@ IR_THRESHOLD = 300 # IR sensor threshold for detecting black track. Change as ne
 CYCLE_TIME = 0.1 # In seconds
 
 def main():
+
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
     global pose2d_sparki_odometry
     global theta, value_array, ping_distance
-
+    value_array = [1000, 1000, 0, 1000, 1000]
     #TODO: Init your node to register it with the ROS core
     init()
     motor_message = Float32MultiArray()
@@ -49,19 +50,19 @@ def main():
         #Spin left
         elif( lineLeft < IR_THRESHOLD):
             #sparki.moveLeft(); // turn left
-            motor_message = [-1.0, 1.0]
+            motor_message.data = [-1.0, 1.0]
             publisher_motor.publish(motor_message)
         #spin right
         elif( lineRight < IR_THRESHOLD):
             #sparki.moveRight(); // turn right
-            motor_message = [1.0, -1.0]
+            motor_message.data = [1.0, -1.0]
             publisher_motor.publish(motor_message)
 
         #if the center line sensor is the only one reading a line
         else:
             #sparki.moveForward(); // move forward
             #movement = 0;
-            motor_message = [1.0, 1.0]
+            motor_message.data = [1.0, 1.0]
             publisher_motor.publish(motor_message)
 
         #TODO: Implement CYCLE TIME
@@ -69,7 +70,7 @@ def main():
         if(end_time - start_time < 50):
             rospy.sleep((50 - (start_time - end_time)) / 1000);
         #sparki.moveStop();
-        motor_message = [0.0,0.0]
+        motor_message.data = [0.0,0.0]
         publisher_motor.publish(motor_message)
         msg = Empty()
         publisher_ping.publish(msg)
@@ -77,14 +78,15 @@ def main():
 
 
 def init():
+    rospy.init_node("main", anonymous=True)
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global subscriber_odometry, subscriber_state
     global pose2d_sparki_odometry
     global theta, value_array, ping_distance
-    publisher_motor = rospy.Publisher('/sparki/motor_command', Float32MultiArray)
-    publisher_ping = rospy.Publisher('/sparki/ping_command', Empty)
-    publisher_servo = rospy.Publisher('/sparki/set_servo', Int16)
-    publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D)
+    publisher_motor = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
+    publisher_ping = rospy.Publisher('/sparki/ping_command', Empty, queue_size=10)
+    publisher_servo = rospy.Publisher('/sparki/set_servo', Int16, queue_size=10)
+    publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
     subscriber_odometry = rospy.Subscriber('/sparki/odometry', Pose2D, callback_update_odometry)
     subscriber_state = rospy.Subscriber('/sparki/state', Pose2D, callback_update_state)
 
