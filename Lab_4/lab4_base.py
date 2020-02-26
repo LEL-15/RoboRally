@@ -27,12 +27,14 @@ CYCLE_TIME = 0.1 # In seconds
 def main():
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
+    CYCLE_TIME = 50;
     global pose2d_sparki_odometry
 
     #TODO: Init your node to register it with the ROS core
     init()
 
     while not rospy.is_shutdown():
+        start_time = int(round(time.time() * 1000))
         #TODO: Implement CYCLE TIME
 
         #TODO: Implement line following code here
@@ -44,8 +46,9 @@ def main():
             rospy.loginfo("Loop Closure Triggered")
 
         #TODO: Implement CYCLE TIME
-        rospy.sleep(0)
-
+        end_time = int(round(time.time() * 1000));
+        if(end_time - start_time < 50):
+            rospy.sleep((50 - (start_time - end_time)) / 1000);
 
 
 def init():
