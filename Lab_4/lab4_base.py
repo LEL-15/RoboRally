@@ -28,7 +28,6 @@ def main():
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
     global pose2d_sparki_odometry
-    global current_state
     global theta, value_array, ping_distance
 
     #TODO: Init your node to register it with the ROS core
@@ -62,6 +61,8 @@ def main():
         if(end_time - start_time < 50):
             rospy.sleep((50 - (start_time - end_time)) / 1000);
         sparki.moveStop();
+        msg = Empty()
+        publisher_ping.publish(msg)
 
 
 
@@ -78,8 +79,10 @@ def init():
     subscriber_state = rospy.Subscriber('/sparki/state', 'std_msgs/String', callback_update_state)
 
     msg = Int16()
-    msg.data = 45
+    msg.data = -45
     publisher_servo.publish(msg)
+
+    pose2d_sparki_odometry = Pose2D()
     #TODO: Set up your publishers and subscribers
     #TODO: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
     #TODO: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
@@ -135,3 +138,5 @@ def cost(cell_index_from, cell_index_to):
 
 if __name__ == "__main__":
     main()
+
+
