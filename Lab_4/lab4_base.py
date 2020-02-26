@@ -45,19 +45,19 @@ def main():
         lineLeft = value_array[0]
         lineCenter = value_array[1]
         lineRight = value_array[2]
-        if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
+        if((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
             rospy.loginfo("Loop Closure Triggered")
         #Spin left
-        else if ( lineLeft < IR_THRESHOLD ):
-            sparki.moveLeft(); // turn left
+        elif ( lineLeft < IR_THRESHOLD ):
+            sparki.moveLeft();
         #spin right
-        elsif( lineRight < IR_THRESHOLD ):
-            sparki.moveRight(); // turn right
+        elif( lineRight < IR_THRESHOLD ):
+            sparki.moveRight();
             movement = -1;
 
         #if the center line sensor is the only one reading a line
         else:
-            sparki.moveForward(); // move forward
+            sparki.moveForward();
             movement = 0;
 
         #TODO: Implement CYCLE TIME
