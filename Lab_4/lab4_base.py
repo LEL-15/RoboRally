@@ -44,15 +44,15 @@ def main():
         lineLeft = value_array[1]
         lineCenter = value_array[2]
         lineRight = value_array[3]
-        if ((lineCenter < IR_THRESHOLD) && (lineLeft < IR_THRESHOLD) && (lineRight < IR_THRESHOLD) ):
+        if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
             rospy.loginfo("Loop Closure Triggered")
         #Spin left
-        else if ( lineLeft < IR_THRESHOLD):
+        elif( lineLeft < IR_THRESHOLD):
             #sparki.moveLeft(); // turn left
             motor_message = [-1.0, 1.0]
             publisher_motor.publish(motor_message)
         #spin right
-        elsif( lineRight < IR_THRESHOLD):
+        elif( lineRight < IR_THRESHOLD):
             #sparki.moveRight(); // turn right
             motor_message = [1.0, -1.0]
             publisher_motor.publish(motor_message)
