@@ -27,9 +27,9 @@ CYCLE_TIME = 0.1 # In seconds
 def main():
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
-    CYCLE_TIME = 50;
     global pose2d_sparki_odometry
     global current_state
+    global theta, value_array, ping_distance
 
     #TODO: Init your node to register it with the ROS core
     init()
