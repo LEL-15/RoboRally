@@ -32,7 +32,7 @@ def main():
 
     #TODO: Init your node to register it with the ROS core
     init()
-
+    motor_message = Float32MultiArray()
     while not rospy.is_shutdown():
         #TODO: Implement CYCLE TIME
         start_time = int(round(time.time() * 1000))
@@ -40,31 +40,37 @@ def main():
         #      To create a message for changing motor speed, use Float32MultiArray()
         #      (e.g., msg = Float32MultiArray()     msg.data = [1.0,1.0]      publisher.pub(msg))
         
-        #Reset point\
-        #value_array[left, center, right]
-        lineLeft = value_array[0]
-        lineCenter = value_array[1]
-        lineRight = value_array[2]
-        if((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
+        #Reset point
+        lineLeft = value_array[1]
+        lineCenter = value_array[2]
+        lineRight = value_array[3]
+        if ((lineCenter < IR_THRESHOLD) && (lineLeft < IR_THRESHOLD) && (lineRight < IR_THRESHOLD) ):
             rospy.loginfo("Loop Closure Triggered")
         #Spin left
-        elif ( lineLeft < IR_THRESHOLD ):
-            sparki.moveLeft();
+        else if ( lineLeft < IR_THRESHOLD):
+            #sparki.moveLeft(); // turn left
+            motor_message = [-1.0, 1.0]
+            publisher_motor.publish(motor_message)
         #spin right
-        elif( lineRight < IR_THRESHOLD ):
-            sparki.moveRight();
-            movement = -1;
+        elsif( lineRight < IR_THRESHOLD):
+            #sparki.moveRight(); // turn right
+            motor_message = [1.0, -1.0]
+            publisher_motor.publish(motor_message)
 
         #if the center line sensor is the only one reading a line
         else:
-            sparki.moveForward();
-            movement = 0;
+            #sparki.moveForward(); // move forward
+            #movement = 0;
+            motor_message = [1.0, 1.0]
+            publisher_motor.publish(motor_message)
 
         #TODO: Implement CYCLE TIME
         end_time = int(round(time.time() * 1000));
         if(end_time - start_time < 50):
             rospy.sleep((50 - (start_time - end_time)) / 1000);
-        sparki.moveStop();
+        #sparki.moveStop();
+        motor_message = [0.0,0.0]
+        publisher_motor.publish(motor_message)
         msg = Empty()
         publisher_ping.publish(msg)
 
@@ -75,12 +81,12 @@ def init():
     global subscriber_odometry, subscriber_state
     global pose2d_sparki_odometry
     global theta, value_array, ping_distance
-    publisher_motor = rospy.Publisher('/sparki/motor_command', 'std_msgs/Float32MultiArray')
-    publisher_ping = rospy.Publisher('/sparki/ping_command', 'std_msgs/Empty')
-    publisher_servo = rospy.Publisher('/sparki/set_servo', 'std_msgs/Int16')
-    publisher_odom = rospy.Publisher('/sparki/set_odometry', 'geometry_msgs/Pose2D')
-    subscriber_odometry = rospy.Subscriber('/sparki/odometry', 'geometry_msgs/Pose2D', callback_update_odometry)
-    subscriber_state = rospy.Subscriber('/sparki/state', 'std_msgs/String', callback_update_state)
+    publisher_motor = rospy.Publisher('/sparki/motor_command', Float32MultiArray)
+    publisher_ping = rospy.Publisher('/sparki/ping_command', Empty)
+    publisher_servo = rospy.Publisher('/sparki/set_servo', Int16)
+    publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D)
+    subscriber_odometry = rospy.Subscriber('/sparki/odometry', Pose2D, callback_update_odometry)
+    subscriber_state = rospy.Subscriber('/sparki/state', Pose2D, callback_update_state)
 
     msg = Int16()
     msg.data = -45
@@ -104,9 +110,9 @@ def callback_update_state(data):
     theta = state_dict["servo"]
     value_array = state_dict["light_sensors"]
     try:
-        ping_distance = state_dict["ping_distance"]
+        ping_distance = state_dict["ping"]
     except:
-        ping_distance = None
+        print("No ping")
 
 def convert_ultrasonic_to_robot_coords(x_us):
     #TODO: Using US sensor reading and servo angle, return value in robot-centric coordinates
