@@ -141,13 +141,18 @@ def populate_map_from_ping(x_ping, y_ping):
 
 def display_map():
     #TODO: Display the map
+    spark = ij_to_cell_index(pose2d_sparki_odometry[0], pose2d_sparki_odometry[1]);
+
     for i in range(world_map.length()):
-        if (world_map[i]):
+        if (i == spark):
+            print("-1")
+        elif (world_map[i]):
             print("1")
-        else:
+        elif:
             print("0")
         if (i%20 == 19):
             print("\n")
+
 
 def ij_to_cell_index(i,j):
     #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
