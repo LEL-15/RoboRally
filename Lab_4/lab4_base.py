@@ -73,6 +73,7 @@ def main():
         #Send message to knows to render again
         publisher_render.publish(Empty())
         #TODO: Display map
+        display_map()
 
 
 
@@ -150,6 +151,7 @@ def display_map():
             print("1")
         elif:
             print("0")
+            
         if (i%20 == 19):
             print("\n")
 
