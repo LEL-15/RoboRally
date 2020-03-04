@@ -141,7 +141,13 @@ def populate_map_from_ping(x_ping, y_ping):
 
 def display_map():
     #TODO: Display the map
-    pass
+    for i in range(world_map.length()):
+        if (world_map[i]):
+            print("1")
+        else:
+            print("0")
+        if (i%20 == 19):
+            print("\n")
 
 def ij_to_cell_index(i,j):
     #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
