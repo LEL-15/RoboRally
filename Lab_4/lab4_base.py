@@ -154,7 +154,7 @@ def display_map():
             print("-1")
         elif (world_map[i]):
             print("1")
-        elif:
+        else:
             print("0")
             
         if (i%20 == 19):
