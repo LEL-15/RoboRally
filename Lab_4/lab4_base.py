@@ -17,7 +17,7 @@ value_array = None
 ping_distance = None
 #ATTEMPTED: Create data structure to hold map representation
 #Actually 60x42 centimeters, so here each cell is 3x3 centimeters (20*14)
-world_map = [280];
+world_map = [];
 
 # TODO: Use these variables to hold your publishers and subscribers
 publisher_motor = None
@@ -99,13 +99,12 @@ def init():
     publisher_servo.publish(msg)
     #ATTEMPTED: Set map values to all be empty
     for i in range(280):
-        world_map[i] = False;
+        world_map.append(False);
 
 def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
     #DONE: Copy this data into your local odometry variable
     global pose2d_sparki_odometry 
-    print(data)
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
     pose2d_sparki_odometry.theta = data.theta
@@ -116,8 +115,10 @@ def callback_update_state(data):
     global servo, value_array, ping_distance
     state_dict = json.loads(data.data) # Creates a dictionary object from the JSON string received from the state topic
     #DONE: Load data into your program's local state variables
+    print(state_dict)
     servo = state_dict["servo"]
     value_array = state_dict["light_sensors"]
+    #Update map
     if('ping' in state_dict and state_dict['ping'] != -1):
         ping_distance = state_dict["ping"]
 
