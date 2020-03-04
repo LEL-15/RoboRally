@@ -155,7 +155,7 @@ def display_map():
             print("1"),
         else:
             print("0"),
-            
+
         if (i%20 == 19):
             print("\n"),
 
@@ -174,13 +174,14 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
-    distance_tracking = []
-    for i in range(280):
-        distanc_tracking.append(-1);
-    while(distance_tracking[cell_index_to] == -1){
+    # distance_tracking = []
+    # for i in range(280):
+    #     distanc_tracking.append(-1);
+    # while(distance_tracking[cell_index_to] == -1){
 
-    }
-    return distance
+    # }
+    # return distance
+    pass
 
 if __name__ == "__main__":
     main()
