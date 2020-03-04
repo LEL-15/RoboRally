@@ -104,7 +104,6 @@ def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
     #DONE: Copy this data into your local odometry variable
     global pose2d_sparki_odometry 
-    print(data)
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
     pose2d_sparki_odometry.theta = data.theta
@@ -115,8 +114,10 @@ def callback_update_state(data):
     global servo, value_array, ping_distance
     state_dict = json.loads(data.data) # Creates a dictionary object from the JSON string received from the state topic
     #DONE: Load data into your program's local state variables
+    print(state_dict)
     servo = state_dict["servo"]
     value_array = state_dict["light_sensors"]
+    #Update map
     if('ping' in state_dict and state_dict['ping'] != -1):
         ping_distance = state_dict["ping"]
 
