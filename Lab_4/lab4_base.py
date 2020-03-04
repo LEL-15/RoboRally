@@ -17,7 +17,7 @@ value_array = None
 ping_distance = None
 #ATTEMPTED: Create data structure to hold map representation
 #Actually 60x42 centimeters, so here each cell is 3x3 centimeters (20*14)
-bool world_map[180];
+world_map = [280];
 
 # TODO: Use these variables to hold your publishers and subscribers
 publisher_motor = None
@@ -72,7 +72,6 @@ def main():
         publisher_ping.publish(msg)
         #Send message to knows to render again
         publisher_render.publish(Empty())
-        #TODO: Update map
         #TODO: Display map
 
 
@@ -105,6 +104,7 @@ def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
     #DONE: Copy this data into your local odometry variable
     global pose2d_sparki_odometry 
+    print(data)
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
     pose2d_sparki_odometry.theta = data.theta
