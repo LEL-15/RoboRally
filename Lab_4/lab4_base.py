@@ -120,6 +120,7 @@ def callback_update_state(data):
     #Update map
     if('ping' in state_dict and state_dict['ping'] != -1):
         ping_distance = state_dict["ping"]
+        populate_map_from_ping(ping_distance)
 
 def convert_ultrasonic_to_robot_coords(x_us):
     #ATTEMPTED: Using US sensor reading and servo angle, return value in robot-centric coordinates
@@ -136,7 +137,9 @@ def convert_robot_coords_to_world(x_r, y_r):
 
 def populate_map_from_ping(x_ping, y_ping):
     #ATTEMPTED: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
-    cell = ij_to_cell_index(x_ping, y_ping)
+    robotLocX, robotLocY = convert_ultrasonic_to_robot_coords(ping_distance)
+    worldLocX, worldLocY = convert_robot_coords_to_world()
+    cell = ij_to_cell_index(worldLocX, worldLocY)
     world_map[cell] = True
     return
 
