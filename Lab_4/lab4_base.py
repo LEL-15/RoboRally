@@ -2,6 +2,7 @@ import rospy
 import json
 import copy
 import time
+import math;
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float32MultiArray, Empty, String, Int16
 
@@ -15,8 +16,8 @@ servo = None
 value_array = None
 ping_distance = None
 #TODO: Create data structure to hold map representation
-#Actually 60x42 centimeters, so here each cell is 3x3 centimeters
-bool world_map[20][14];
+#Actually 60x42 centimeters, so here each cell is 3x3 centimeters (20*14)
+bool world_map[180];
 
 # TODO: Use these variables to hold your publishers and subscribers
 publisher_motor = None
@@ -94,7 +95,9 @@ def init():
     #TODO: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
     msg = Int16(80)
     publisher_servo.publish(msg)
-    
+    #Set map values to all be empty
+    for i in range(280):
+        world_map[i] = False;
 
 def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
@@ -130,8 +133,9 @@ def convert_robot_coords_to_world(x_r, y_r):
 
 def populate_map_from_ping(x_ping, y_ping):
     #TODO: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
-    int cellX, int cellY = ij_to_cell_index(x_ping, y_ping);
-    pass
+    cell = ij_to_cell_index(x_ping, y_ping)
+    world_map[cell] = True
+    return
 
 def display_map():
     #TODO: Display the map
@@ -139,7 +143,9 @@ def display_map():
 
 def ij_to_cell_index(i,j):
     #TODO: Convert from i,j coordinates to a single integer that identifies a grid cell
-    return 0
+    xCell = math.floor(i/3)
+    yCell = math.floor(j/3)
+    return (xCell + yCell*60)
 
 def cell_index_to_ij(cell_index):
     #TODO: Convert from cell_index to (i,j) coordinates
