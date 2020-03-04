@@ -146,12 +146,16 @@ def display_map():
     spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
 
     for i in range(len(world_map)):
+        if (i == 0):
+            print("\n\n\n")
+
         if (i == spark):
             print("-1"),
         elif (world_map[i]):
             print("1"),
         else:
             print("0"),
+            
         if (i%20 == 19):
             print("\n"),
 
