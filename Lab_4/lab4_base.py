@@ -29,7 +29,6 @@ value_array = None
 ping_distance = None
 
 def main():
-
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global IR_THRESHOLD, CYCLE_TIME
     global pose2d_sparki_odometry
@@ -42,46 +41,29 @@ def main():
     publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
     while not rospy.is_shutdown():
         publisher_servo.publish(Int16(80))
-        #TODO: Implement CYCLE TIME
-        #start_time = int(round(time.time() * 1000))
         rate = rospy.Rate(1.0/CYCLE_TIME)
         motor_message = Float32MultiArray()
-        start_time = time.time()
         #TODO: Implement line following code here
         #      To create a message for changing motor speed, use Float32MultiArray()
         #      (e.g., msg = Float32MultiArray()     msg.data = [1.0,1.0]      publisher.pub(msg))
-        
-        #Reset point
         lineLeft = value_array[1]
         lineCenter = value_array[2]
         lineRight = value_array[3]
+        #Reset point
         if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
             rospy.loginfo("Loop Closure Triggered")
-        #Spin left
+        #Go forward
         if lineCenter < IR_THRESHOLD:
             motor_message.data = [1.0,1.0]
+        #Turn right
         elif( lineLeft < IR_THRESHOLD):
             motor_message.data = [-1.0, 1.0]
-        #spin right
+        #Turn Left
         elif( lineRight < IR_THRESHOLD):
             motor_message.data = [1.0, -1.0]
-
-        #if the center line sensor is the only one reading a line
-        #else:
-            #motor_message.data = [1.0, 1.0]
+        #TODO: Implement CYCLE TIME
         publisher_motor.publish(motor_message)
         rate.sleep()
-        #TODO: Implement CYCLE TIME
-        #end_time = int(round(time.time() * 1000));
-        """
-        end_time = time.time()
-        if(end_time - start_time < 50):
-            #rospy.sleep((50 - (end_time - start_time))/1000);
-            rospy.sleep(50 - end_time - start_time)
-        """
-        #sparki.moveStop();
-        #motor_message.data = [0.0,0.0]
-        #publisher_motor.publish(motor_message)
         msg = Empty()
         publisher_ping.publish(msg)
         publisher_render.publish(Empty())
