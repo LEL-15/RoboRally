@@ -74,9 +74,6 @@ def main():
         publisher_render.publish(Empty())
         #TODO: Display map
         display_map()
-    
-
-
 
 def init():
     #DONE: Set up your publishers and subscribers
@@ -173,10 +170,7 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
-    cell_ij_from = cell_index_to_ij(cell_index_from)
-    cell_ij_to   = cell_index_to_ij(cell_index_to)
-
-    dist = (math.sqrt(cell_ij_from[0] - cell_ij_from[1])**2, (cell_index_from[0]- cell_ij_to[1])**2)
+    
 
     return dist
 
