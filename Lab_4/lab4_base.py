@@ -147,27 +147,14 @@ def populate_map_from_ping(ping_distance):
 def display_map():
     #ATTEMPTED: Display the map
     spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
-
-<<<<<<< HEAD
     myrow = []
-
-    for i in range(world_map.length()):
-=======
     for i in range(len(world_map)):
->>>>>>> aa726f669c5906e8fb68677cdf9615f9e2cb2059
         if (i == spark):
             myrow.append("-1")
         elif (world_map[i]):
-<<<<<<< HEAD
             myrow.append("1")
-        elif:
-            myrow.append("0")
-=======
-            print("1")
         else:
-            print("0")
->>>>>>> 3761bd544c12cc5c8e32d30fd49eead9689e3aa2
-            
+            myrow.append("0")
         if (i%20 == 19):
             print(myrow)
             myrow = []
