@@ -12,10 +12,10 @@ from std_msgs.msg import Float32MultiArray, Empty, String, Int16
 pose2d_sparki_odometry = None 
 #TODO: Track servo angle in radians
 servo = None
-#TODO: Track IR sensor readings (there are five readings in the array: we've been using indices 1,2,3 for left/center/right)
+#DONE: Track IR sensor readings (there are five readings in the array: we've been using indices 1,2,3 for left/center/right)
 value_array = None
 ping_distance = None
-#TODO: Create data structure to hold map representation
+#ATTEMPTED: Create data structure to hold map representation
 #Actually 60x42 centimeters, so here each cell is 3x3 centimeters (20*14)
 bool world_map[180];
 
@@ -72,11 +72,13 @@ def main():
         publisher_ping.publish(msg)
         #Send message to knows to render again
         publisher_render.publish(Empty())
+        #TODO: Update map
+        #TODO: Display map
 
 
 
 def init():
-    #TODO: Set up your publishers and subscribers
+    #DONE: Set up your publishers and subscribers
     rospy.init_node("main", anonymous=True)
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global subscriber_odometry, subscriber_state
@@ -90,18 +92,18 @@ def init():
     subscriber_state = rospy.Subscriber('/sparki/state', String, callback_update_state)
 
 
-    #TODO: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
+    #DONE: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
     pose2d_sparki_odometry = Pose2D()
-    #TODO: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
+    #DONE: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
     msg = Int16(80)
     publisher_servo.publish(msg)
-    #Set map values to all be empty
+    #ATTEMPTED: Set map values to all be empty
     for i in range(280):
         world_map[i] = False;
 
 def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
-    #TODO: Copy this data into your local odometry variable
+    #DONE: Copy this data into your local odometry variable
     global pose2d_sparki_odometry 
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
@@ -119,12 +121,12 @@ def callback_update_state(data):
         ping_distance = state_dict["ping"]
 
 def convert_ultrasonic_to_robot_coords(x_us):
-    #DONE: Using US sensor reading and servo angle, return value in robot-centric coordinates
+    #ATTEMPTED: Using US sensor reading and servo angle, return value in robot-centric coordinates
     x_r, y_r = 0., x_us
     return x_r, y_r
 
 def convert_robot_coords_to_world(x_r, y_r):
-    #DONE: Using odometry, convert robot-centric coordinates into world coordinates
+    #ATTEMPTED: Using odometry, convert robot-centric coordinates into world coordinates
     x_w  = pose2d_sparki_odometry.x + sin(pose2d_sparki_odometry.theta) * x_r;
     y_w = pose2d_sparki_odometry.x + cos(pose2d_sparki_odometry.theta) * y_r;
     0., 0.
@@ -132,7 +134,7 @@ def convert_robot_coords_to_world(x_r, y_r):
     return x_w, y_w
 
 def populate_map_from_ping(x_ping, y_ping):
-    #TODO: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
+    #ATTEMPTED: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
     cell = ij_to_cell_index(x_ping, y_ping)
     world_map[cell] = True
     return
@@ -142,15 +144,16 @@ def display_map():
     pass
 
 def ij_to_cell_index(i,j):
-    #TODO: Convert from i,j coordinates to a single integer that identifies a grid cell
+    #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
     xCell = math.floor(i/3)
     yCell = math.floor(j/3)
     return (xCell + yCell*60)
 
 def cell_index_to_ij(cell_index):
-    #TODO: Convert from cell_index to (i,j) coordinates
-    return 0, 0
-
+    #ATTEMPTED: Convert from cell_index to (i,j) coordinates
+    column = cell_index % 60
+    row = floor(cell_index /60);
+    return column, row
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
