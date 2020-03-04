@@ -142,19 +142,30 @@ def populate_map_from_ping(x_ping, y_ping):
 
 def display_map():
     #TODO: Display the map
-    pass
+    spark = ij_to_cell_index(pose2d_sparki_odometry[0], pose2d_sparki_odometry[1]);
+
+    for i in range(world_map.length()):
+        if (i == spark):
+            print("-1")
+        elif (world_map[i]):
+            print("1")
+        elif:
+            print("0")
+        if (i%20 == 19):
+            print("\n")
+
 
 def ij_to_cell_index(i,j):
     #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
     xCell = math.floor(i/3)
     yCell = math.floor(j/3)
-    return (xCell + yCell*60)
+    return (xCell + yCell*20)
 
 def cell_index_to_ij(cell_index):
     #ATTEMPTED: Convert from cell_index to (i,j) coordinates
-    column = cell_index % 60
-    row = floor(cell_index /60);
-    return column, row
+    column = cell_index % 20
+    row = floor(cell_index /20)
+    return column*3, row*3
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
