@@ -73,7 +73,8 @@ def main():
         #Send message to knows to render again
         publisher_render.publish(Empty())
         #TODO: Display map
-        display_map()
+    
+    display_map()
 
 
 
