@@ -73,8 +73,8 @@ def main():
         #Send message to knows to render again
         publisher_render.publish(Empty())
         #TODO: Display map
+        display_map()
     
-    display_map()
 
 
 
@@ -116,7 +116,6 @@ def callback_update_state(data):
     global servo, value_array, ping_distance
     state_dict = json.loads(data.data) # Creates a dictionary object from the JSON string received from the state topic
     #DONE: Load data into your program's local state variables
-    print(state_dict)
     servo = state_dict["servo"]
     value_array = state_dict["light_sensors"]
     #Update map
@@ -131,27 +130,31 @@ def convert_ultrasonic_to_robot_coords(x_us):
 
 def convert_robot_coords_to_world(x_r, y_r):
     #ATTEMPTED: Using odometry, convert robot-centric coordinates into world coordinates
-    x_w  = pose2d_sparki_odometry.x + sin(pose2d_sparki_odometry.theta) * x_r;
-    y_w = pose2d_sparki_odometry.x + cos(pose2d_sparki_odometry.theta) * y_r;
+    x_w  = pose2d_sparki_odometry.x + math.sin(pose2d_sparki_odometry.theta) * x_r;
+    y_w = pose2d_sparki_odometry.x + math.cos(pose2d_sparki_odometry.theta) * y_r;
     0., 0.
 
     return x_w, y_w
 
-def populate_map_from_ping(x_ping, y_ping):
+def populate_map_from_ping(ping_distance):
     #ATTEMPTED: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
     robotLocX, robotLocY = convert_ultrasonic_to_robot_coords(ping_distance)
-    worldLocX, worldLocY = convert_robot_coords_to_world()
+    worldLocX, worldLocY = convert_robot_coords_to_world(robotLocX, robotLocY)
     cell = ij_to_cell_index(worldLocX, worldLocY)
-    world_map[cell] = True
+    world_map[int(cell)] = True
     return
 
 def display_map():
     #TODO: Display the map
-    spark = ij_to_cell_index(pose2d_sparki_odometry[0], pose2d_sparki_odometry[1]);
+    spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
 
+<<<<<<< HEAD
     myrow = []
 
     for i in range(world_map.length()):
+=======
+    for i in range(len(world_map)):
+>>>>>>> aa726f669c5906e8fb68677cdf9615f9e2cb2059
         if (i == spark):
             myrow.append("-1")
         elif (world_map[i]):
