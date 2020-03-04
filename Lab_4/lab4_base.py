@@ -147,13 +147,13 @@ def display_map():
 
     for i in range(len(world_map)):
         if (i == spark):
-            print("-1", end = ' ')
+            print("-1"),
         elif (world_map[i]):
-            print("1", end = ' ')
+            print("1"),
         else:
-            print("0", end = ' ')
+            print("0"),
         if (i%20 == 19):
-            print("\n", end = ' ')
+            print("\n"),
 
 
 def ij_to_cell_index(i,j):
