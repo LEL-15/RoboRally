@@ -170,11 +170,13 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
-    
+    distance_tracking = []
+    for i in range(280):
+        distanc_tracking.append(-1);
+    while(distance_tracking[cell_index_to] == -1){
 
-    return dist
+    }
+    return distance
 
 if __name__ == "__main__":
     main()
-
-
