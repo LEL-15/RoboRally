@@ -97,7 +97,7 @@ def init():
     publisher_servo.publish(msg)
     #ATTEMPTED: Set map values to all be empty
     for i in range(280):
-        world_map.append(False);
+        world_map.append(0);
 
 def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
@@ -138,7 +138,7 @@ def populate_map_from_ping(ping_distance):
     robotLocX, robotLocY = convert_ultrasonic_to_robot_coords(ping_distance)
     worldLocX, worldLocY = convert_robot_coords_to_world(robotLocX, robotLocY)
     cell = ij_to_cell_index(worldLocX, worldLocY)
-    world_map[int(cell)] = True
+    world_map[int(cell)] = 1
     return
 
 def display_map():
@@ -174,6 +174,7 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
+<<<<<<< HEAD
     # distance_tracking = []
     # for i in range(280):
     #     distanc_tracking.append(-1);
@@ -182,6 +183,26 @@ def cost(cell_index_from, cell_index_to):
     # }
     # return distance
     pass
+=======
+    distance_tracking = []
+    for i in range(280):
+        distance_tracking.append(-1);
+    distance_tracking[cell_index_from] = 0;
+    while(distance_tracking[cell_index_to] == -1):
+        shortest_add_cell = -1
+        shortest_add_distance = -1
+        for i in range(280):
+            if(distance_tracking[i] == -1 and world_map[i] != ):
+                adjacentCell = -1
+                adjacentDistance = -1
+                #Above Cell
+
+                #Left Cell
+                #Rigth Cell
+                #Below Cell
+        print("test")
+    return distance_tracking[cell_index_to]
+>>>>>>> a3b66e0193254bb29b676bf155f9c3533becd2e1
 
 if __name__ == "__main__":
     main()
