@@ -148,16 +148,29 @@ def display_map():
     #ATTEMPTED: Display the map
     spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
 
+<<<<<<< HEAD
+    myrow = []
+
+    for i in range(world_map.length()):
+=======
     for i in range(len(world_map)):
+>>>>>>> aa726f669c5906e8fb68677cdf9615f9e2cb2059
         if (i == spark):
-            print("-1")
+            myrow.append("-1")
         elif (world_map[i]):
+<<<<<<< HEAD
+            myrow.append("1")
+        elif:
+            myrow.append("0")
+=======
             print("1")
         else:
             print("0")
+>>>>>>> 3761bd544c12cc5c8e32d30fd49eead9689e3aa2
             
         if (i%20 == 19):
-            print("\n")
+            print(myrow)
+            myrow = []
 
 
 def ij_to_cell_index(i,j):
@@ -174,7 +187,12 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
-    return 0
+    cell_ij_from = cell_index_to_ij(cell_index_from)
+    cell_ij_to   = cell_index_to_ij(cell_index_to)
+
+    dist = (math.sqrt(cell_ij_from[0] - cell_ij_from[1])**2, (cell_index_from[0]- cell_ij_to[1])**2)
+
+    return dist
 
 if __name__ == "__main__":
     main()
