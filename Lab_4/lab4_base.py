@@ -7,10 +7,16 @@ from std_msgs.msg import Float32MultiArray, Empty, String, Int16
 
 
 # GLOBALS 
-pose2d_sparki_odometry = None #Pose2D message object, contains x,y,theta members in meters and radians
+#Pose2D message object, contains x,y,theta members in meters and radians
+pose2d_sparki_odometry = None 
 #TODO: Track servo angle in radians
+servo = None
 #TODO: Track IR sensor readings (there are five readings in the array: we've been using indices 1,2,3 for left/center/right)
+value_array = None
+ping_distance = None
 #TODO: Create data structure to hold map representation
+#Actually 60x42 centimeters, so here each cell is 3x3 centimeters
+bool world_map[20][14];
 
 # TODO: Use these variables to hold your publishers and subscribers
 publisher_motor = None
@@ -23,10 +29,6 @@ subscriber_state = None
 # CONSTANTS 
 IR_THRESHOLD = 300 # IR sensor threshold for detecting black track. Change as necessary.
 CYCLE_TIME = 0.1 # In seconds
-
-servo = None
-value_array = None
-ping_distance = None
 
 def main():
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
@@ -43,7 +45,7 @@ def main():
         publisher_servo.publish(Int16(80))
         rate = rospy.Rate(1.0/CYCLE_TIME)
         motor_message = Float32MultiArray()
-        #TODO: Implement line following code here
+        #DONE: Implement line following code here
         #      To create a message for changing motor speed, use Float32MultiArray()
         #      (e.g., msg = Float32MultiArray()     msg.data = [1.0,1.0]      publisher.pub(msg))
         lineLeft = value_array[1]
@@ -61,16 +63,19 @@ def main():
         #Turn Left
         elif( lineRight < IR_THRESHOLD):
             motor_message.data = [1.0, -1.0]
-        #TODO: Implement CYCLE TIME
+        #DONE: Implement CYCLE TIME
         publisher_motor.publish(motor_message)
         rate.sleep()
+        #Send ping so that sensor returns
         msg = Empty()
         publisher_ping.publish(msg)
+        #Send message to knows to render again
         publisher_render.publish(Empty())
 
 
 
 def init():
+    #TODO: Set up your publishers and subscribers
     rospy.init_node("main", anonymous=True)
     global publisher_motor, publisher_ping, publisher_servo, publisher_odom
     global subscriber_odometry, subscriber_state
@@ -84,45 +89,48 @@ def init():
     subscriber_state = rospy.Subscriber('/sparki/state', String, callback_update_state)
 
 
-
+    #TODO: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
+    pose2d_sparki_odometry = Pose2D()
+    #TODO: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
     msg = Int16(80)
     publisher_servo.publish(msg)
-
-    pose2d_sparki_odometry = Pose2D()
-    #TODO: Set up your publishers and subscribers
-    #TODO: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
-    #TODO: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
+    
 
 def callback_update_odometry(data):
     # Receives geometry_msgs/Pose2D message
+    #TODO: Copy this data into your local odometry variable
     global pose2d_sparki_odometry 
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
     pose2d_sparki_odometry.theta = data.theta
-    #TODO: Copy this data into your local odometry variable
+    #print(pose2d_sparki_odometry);
+    
 
 def callback_update_state(data):
     global servo, value_array, ping_distance
     state_dict = json.loads(data.data) # Creates a dictionary object from the JSON string received from the state topic
-    #TODO: Load data into your program's local state variables
+    #DONE: Load data into your program's local state variables
     servo = state_dict["servo"]
     value_array = state_dict["light_sensors"]
     if('ping' in state_dict and state_dict['ping'] != -1):
         ping_distance = state_dict["ping"]
 
 def convert_ultrasonic_to_robot_coords(x_us):
-    #TODO: Using US sensor reading and servo angle, return value in robot-centric coordinates
-    x_r, y_r = 0., 0.
+    #DONE: Using US sensor reading and servo angle, return value in robot-centric coordinates
+    x_r, y_r = 0., x_us
     return x_r, y_r
 
 def convert_robot_coords_to_world(x_r, y_r):
-    #TODO: Using odometry, convert robot-centric coordinates into world coordinates
-    x_w, y_w = 0., 0.
+    #DONE: Using odometry, convert robot-centric coordinates into world coordinates
+    x_w  = pose2d_sparki_odometry.x + sin(pose2d_sparki_odometry.theta) * x_r;
+    y_w = pose2d_sparki_odometry.x + cos(pose2d_sparki_odometry.theta) * y_r;
+    0., 0.
 
     return x_w, y_w
 
 def populate_map_from_ping(x_ping, y_ping):
     #TODO: Given world coordinates of an object detected via ping, fill in the corresponding part of the map
+    int cellX, int cellY = ij_to_cell_index(x_ping, y_ping);
     pass
 
 def display_map():
