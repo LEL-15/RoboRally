@@ -145,7 +145,7 @@ def populate_map_from_ping(ping_distance):
     return
 
 def display_map():
-    #TODO: Display the map
+    #ATTEMPTED: Display the map
     spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
 
     for i in range(len(world_map)):
@@ -168,9 +168,9 @@ def ij_to_cell_index(i,j):
 
 def cell_index_to_ij(cell_index):
     #ATTEMPTED: Convert from cell_index to (i,j) coordinates
-    column = cell_index % 20
+    column = cell_index % 20 
     row = floor(cell_index /20)
-    return column*3, row*3
+    return column*3 + 1.5, row*3 + 1.5
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
