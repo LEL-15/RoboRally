@@ -85,9 +85,10 @@ def recv_render(msg):
     g_render_requested = True
 
 def set_odometry(msg):
-    global g_pose
-    g_pose = copy.copy(msg)
-    g_pose.theta = -g_pose.theta # Negate theta
+  print("did this")
+  global g_pose
+  g_pose = copy.copy(msg)
+  g_pose.theta = -g_pose.theta # Negate theta
 
 def set_servo(msg):
     global g_servo_angle

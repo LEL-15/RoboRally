@@ -43,6 +43,7 @@ def main():
     publisher_servo.publish(Int16(80))
     publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
     while not rospy.is_shutdown():
+        print(pose2d_sparki_odometry)
         publisher_servo.publish(Int16(80))
         rate = rospy.Rate(1.0/CYCLE_TIME)
         motor_message = Float32MultiArray()
@@ -54,7 +55,11 @@ def main():
         lineRight = value_array[3]
         #Reset point
         if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
-            rospy.loginfo("Loop Closure Triggered")
+            pose2d_sparki_odometry.x = .40645
+            pose2d_sparki_odometry.y = .076
+            pose2d_sparki_odometry.theta = 0
+            publisher_odom.publish(pose2d_sparki_odometry)
+
         #Go forward
         if lineCenter < IR_THRESHOLD:
             motor_message.data = [1.0,1.0]
@@ -73,7 +78,7 @@ def main():
         #Send message to knows to render again
         publisher_render.publish(Empty())
         #TODO: Display map
-        display_map()
+        #display_map()
 
 def init():
     #DONE: Set up your publishers and subscribers
@@ -92,9 +97,13 @@ def init():
 
     #DONE: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
     pose2d_sparki_odometry = Pose2D()
+    pose2d_sparki_odometry.x = .40645
+    pose2d_sparki_odometry.y = .076
+    pose2d_sparki_odometry.theta = 0
+    publisher_odom.publish(pose2d_sparki_odometry)
     #DONE: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
-    msg = Int16(80)
-    publisher_servo.publish(msg)
+    msg = Int16(120)
+    publisher_servo.publish(0)
     #ATTEMPTED: Set map values to all be empty
     for i in range(280):
         world_map.append(0);
@@ -181,16 +190,54 @@ def cost(cell_index_from, cell_index_to):
     while(distance_tracking[cell_index_to] == -1):
         shortest_add_cell = -1
         shortest_add_distance = -1
+        #For every cell in map
         for i in range(280):
-            if(distance_tracking[i] == -1 and world_map[i] != ):
+            if(distance_tracking[i] == -1 and world_map[i] != 1):
                 adjacentCell = -1
                 adjacentDistance = -1
                 #Above Cell
-
+                #If not on top
+                if(i > 19):
+                    #If cell visited
+                    neighbor_index = i-20
+                    if(distance_tracking[neighbor_index] != -1):
+                        #If shortest distance
+                        if(adjacentDistance == -1 or distance_tracking[neighbor_index] < adjacentDistance):
+                            adjacentCell = neighbor_index
+                            adjacentDistance = distance_tracking[neighbor_index]
                 #Left Cell
-                #Rigth Cell
+                #If not on left edge
+                if(i % 20 != 0):
+                    #If cell visited
+                    neighbor_index = i-1
+                    if(distance_tracking[neighbor_index] != -1):
+                        #If shortest distance
+                        if(adjacentDistance == -1 or distance_tracking[neighbor_index] < adjacentDistance):
+                            adjacentCell = neighbor_index
+                            adjacentDistance = distance_tracking[neighbor_index]
+                #Right Cell
+                if(i % 20 != 19):
+                    #If cell visited
+                    neighbor_index = i+1
+                    if(distance_tracking[neighbor_index] != -1):
+                        #If shortest distance
+                        if(adjacentDistance == -1 or distance_tracking[neighbor_index] < adjacentDistance):
+                            adjacentCell = neighbor_index
+                            adjacentDistance = distance_tracking[neighbor_index]
                 #Below Cell
-        print("test")
+                #If not on bottom
+                if(i < 260):
+                    #If cell visited
+                    neighbor_index = i+20
+                    if(distance_tracking[neighbor_index] != -1):
+                        #If shortest distance
+                        if(adjacentDistance == -1 or distance_tracking[neighbor_index] < adjacentDistance):
+                            adjacentCell = neighbor_index
+                            adjacentDistance = distance_tracking[neighbor_index]
+                if(adjacentCell != -1 and (shortest_add_distance == -1 or (adjacentDistance + 1 < shortest_add_distance))):
+                    shortest_add_cell = i
+                    shortest_add_distance = adjacentDistance + 1
+        distance_tracking[shortest_add_cell] = shortest_add_distance
     return distance_tracking[cell_index_to]
 
 if __name__ == "__main__":
