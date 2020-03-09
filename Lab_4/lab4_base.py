@@ -38,12 +38,10 @@ def main():
     global servo, value_array, ping_distance
     value_array = [1000, 1000, 0, 1000, 1000]
     #TODO: Init your node to register it with the ROS core
-
     init()
     publisher_servo.publish(Int16(80))
     publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
     while not rospy.is_shutdown():
-        print(pose2d_sparki_odometry)
         publisher_servo.publish(Int16(80))
         rate = rospy.Rate(1.0/CYCLE_TIME)
         motor_message = Float32MultiArray()
@@ -55,8 +53,8 @@ def main():
         lineRight = value_array[3]
         #Reset point
         if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
-            pose2d_sparki_odometry.x = .40645
-            pose2d_sparki_odometry.y = .076
+            pose2d_sparki_odometry.x = 1.2
+            pose2d_sparki_odometry.y = .2
             pose2d_sparki_odometry.theta = 0
             publisher_odom.publish(pose2d_sparki_odometry)
 
@@ -78,7 +76,7 @@ def main():
         #Send message to knows to render again
         publisher_render.publish(Empty())
         #TODO: Display map
-        #display_map()
+        display_map()
 
 def init():
     #DONE: Set up your publishers and subscribers
@@ -97,10 +95,6 @@ def init():
 
     #DONE: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
     pose2d_sparki_odometry = Pose2D()
-    pose2d_sparki_odometry.x = .40645
-    pose2d_sparki_odometry.y = .076
-    pose2d_sparki_odometry.theta = 0
-    publisher_odom.publish(pose2d_sparki_odometry)
     #DONE: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
     msg = Int16(90)
     publisher_servo.publish(msg)
@@ -115,7 +109,6 @@ def callback_update_odometry(data):
     pose2d_sparki_odometry.x = data.x
     pose2d_sparki_odometry.y = data.y
     pose2d_sparki_odometry.theta = data.theta
-    #print(pose2d_sparki_odometry);
     
 
 def callback_update_state(data):
@@ -136,8 +129,8 @@ def convert_ultrasonic_to_robot_coords(x_us):
 
 def convert_robot_coords_to_world(x_r, y_r):
     #ATTEMPTED: Using odometry, convert robot-centric coordinates into world coordinates
-    x_w  = pose2d_sparki_odometry.x + math.sin(pose2d_sparki_odometry.theta) * x_r;
-    y_w = pose2d_sparki_odometry.x + math.cos(pose2d_sparki_odometry.theta) * y_r;
+    x_w  = pose2d_sparki_odometry.x*20 + math.sin(pose2d_sparki_odometry.theta) * x_r;
+    y_w = pose2d_sparki_odometry.x*20 + math.cos(pose2d_sparki_odometry.theta) * y_r;
     0., 0.
 
     return x_w, y_w
@@ -152,22 +145,25 @@ def populate_map_from_ping(ping_distance):
 
 def display_map():
     #ATTEMPTED: Display the map
-    spark = ij_to_cell_index(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y);
-
+    spark = ij_to_cell_index(pose2d_sparki_odometry.x*20, pose2d_sparki_odometry.y*20)
+    lines = []
+    line = ""
     for i in range(len(world_map)):
-        if (i == 0):
-            print("\n\n\n")
-
         if (i == spark):
-            print("-1"),
-        elif (world_map[i]):
-            print("1"),
+            line = line + "S"
+        elif (world_map[i] == 1):
+            line = line +"O"
         else:
-            print("0"),
+            line = line + "C"
 
         if (i%20 == 19):
-            print("\n"),
-
+            lines.append(line)
+            line = ""
+    for i in range(len(lines)):
+        print(lines[len(lines) - i - 1])
+    
+    print("\n")
+    print("\n")
 
 def ij_to_cell_index(i,j):
     #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
