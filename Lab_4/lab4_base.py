@@ -102,8 +102,8 @@ def init():
     pose2d_sparki_odometry.theta = 0
     publisher_odom.publish(pose2d_sparki_odometry)
     #DONE: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
-    msg = Int16(120)
-    publisher_servo.publish(0)
+    msg = Int16(90)
+    publisher_servo.publish(msg)
     #ATTEMPTED: Set map values to all be empty
     for i in range(280):
         world_map.append(0);
@@ -183,16 +183,6 @@ def cell_index_to_ij(cell_index):
 
 def cost(cell_index_from, cell_index_to):
     #TODO: Return cost of traversing from one cell to another
-<<<<<<< HEAD
-    # distance_tracking = []
-    # for i in range(280):
-    #     distanc_tracking.append(-1);
-    # while(distance_tracking[cell_index_to] == -1){
-
-    # }
-    # return distance
-    pass
-=======
     distance_tracking = []
     for i in range(280):
         distance_tracking.append(-1);
@@ -249,7 +239,6 @@ def cost(cell_index_from, cell_index_to):
                     shortest_add_distance = adjacentDistance + 1
         distance_tracking[shortest_add_cell] = shortest_add_distance
     return distance_tracking[cell_index_to]
->>>>>>> a3b66e0193254bb29b676bf155f9c3533becd2e1
 
 if __name__ == "__main__":
     main()
