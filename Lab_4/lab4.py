@@ -41,10 +41,10 @@ def main():
     value_array = [1000, 1000, 0, 1000, 1000]
     #TODO: Init your node to register it with the ROS core
     init()
-    publisher_servo.publish(Int16(80))
+    publisher_servo.publish(Int16(90))
     publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
     while not rospy.is_shutdown():
-        publisher_servo.publish(Int16(80))
+        publisher_servo.publish(Int16(90))
         rate = rospy.Rate(1.0/CYCLE_TIME)
         motor_message = Float32MultiArray()
         #DONE: Implement line following code here
@@ -53,13 +53,6 @@ def main():
         lineLeft = value_array[1]
         lineCenter = value_array[2]
         lineRight = value_array[3]
-        #Reset point
-        if ((lineCenter < IR_THRESHOLD) and (lineLeft < IR_THRESHOLD) and (lineRight < IR_THRESHOLD) ):
-            pose2d_sparki_odometry.x = 1.2
-            pose2d_sparki_odometry.y = .2
-            pose2d_sparki_odometry.theta = 0
-            publisher_odom.publish(pose2d_sparki_odometry)
-
         #Go forward
         if lineCenter < IR_THRESHOLD:
             motor_message.data = [1.0,1.0]

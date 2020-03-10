@@ -39,7 +39,7 @@ def main():
     value_array = [1000, 1000, 0, 1000, 1000]
     #TODO: Init your node to register it with the ROS core
     init()
-    publisher_servo.publish(Int16(80))
+    publisher_servo.publish(Int16(90))
     publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
     while not rospy.is_shutdown():
         publisher_servo.publish(Int16(80))
@@ -124,15 +124,16 @@ def callback_update_state(data):
 
 def convert_ultrasonic_to_robot_coords(x_us):
     #ATTEMPTED: Using US sensor reading and servo angle, return value in robot-centric coordinates
-    x_r, y_r = 0., x_us
+    x_r = math.cos(pose2d_sparki_odometry.theta) * x_us
+    y_r = math.sin(pose2d_sparki_odometry.theta) * x_us
     return x_r, y_r
 
 def convert_robot_coords_to_world(x_r, y_r):
     #ATTEMPTED: Using odometry, convert robot-centric coordinates into world coordinates
-    x_w  = pose2d_sparki_odometry.x*20 + math.sin(pose2d_sparki_odometry.theta) * x_r;
-    y_w = pose2d_sparki_odometry.x*20 + math.cos(pose2d_sparki_odometry.theta) * y_r;
-    0., 0.
-
+    x_w = pose2d_sparki_odometry.x + x_r * math.sin(pose2d_sparki_odometry.theta) + y_r * math.cos(pose2d_sparki_odometry.theta)
+    y_w = pose2d_sparki_odometry.y + x_r * math.cos(pose2d_sparki_odometry.theta) - y_r * math.sin(pose2d_sparki_odometry.theta)
+    x_w*=20
+    y_w*=20
     return x_w, y_w
 
 def populate_map_from_ping(ping_distance):
@@ -145,7 +146,8 @@ def populate_map_from_ping(ping_distance):
 
 def display_map():
     #ATTEMPTED: Display the map
-    spark = ij_to_cell_index(pose2d_sparki_odometry.x*20, pose2d_sparki_odometry.y*20)
+    x, y = convert_robot_coords_to_world(0, 0)
+    spark = ij_to_cell_index(x, y)
     lines = []
     line = ""
     for i in range(len(world_map)):
@@ -167,14 +169,14 @@ def display_map():
 
 def ij_to_cell_index(i,j):
     #ATTEMPTED: Convert from i,j coordinates to a single integer that identifies a grid cell
-    xCell = math.floor(i/3)
-    yCell = math.floor(j/3)
+    xCell = round(i/3)
+    yCell = round(j/3)
     return (xCell + yCell*20)
 
 def cell_index_to_ij(cell_index):
     #ATTEMPTED: Convert from cell_index to (i,j) coordinates
     column = cell_index % 20 
-    row = floor(cell_index /20)
+    row = round(cell_index /20)
     return column*3 + 1.5, row*3 + 1.5
 
 def cost(cell_index_from, cell_index_to):
