@@ -124,8 +124,23 @@ def get_travel_cost(vertex_source, vertex_dest):
         vertex_dest corresponds to (i,j) coordinates outside the map
         vertex_source and vertex_dest are not adjacent to each other (i.e., more than 1 move away from each other)
   '''
+  global g_NUM_Y_CELLS, g_NUM_X_CELLS
+  map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
+  answer = 1000
+  if (vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size):
+    answer = 1000
+  else:
+    source_x, source_y = vertex_index_to_ij(vertex_source)
+    destination_x, destination_y = vertex_index_to_ij(vertex_dest)    
+    if(world_map[source_x][source_y] == 1 or world_map[destination_x][destination_y]):
+      answer = 1000
+    else:
+      if(source_x == destination_x and (source_y == destination_y + 1 or source_y == destination_y-1)):
+        answer = 1
+      elif(source_y == destination_y and (source_x == destination_x + 1 or source_x == destination_x-1)):
+        answer = 1
+  return answer
 
-  return 100
 
 
 def run_dijkstra(source_vertex):
