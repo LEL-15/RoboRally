@@ -153,6 +153,7 @@ def run_dijkstra(source_vertex):
   Thus, the returned array prev can be treated as a lookup table:  prev[vertex_index] = next vertex index on the path back to source_vertex
   '''
   global g_NUM_X_CELLS, g_NUM_Y_CELLS
+  global g_WORLD_MAP
 
   # Array mapping vertex_index to distance of shortest path from vertex_index to source_vertex.
   dist = [0] * g_NUM_X_CELLS * g_NUM_Y_CELLS
@@ -167,49 +168,52 @@ def run_dijkstra(source_vertex):
   # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
   map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
   source_x, source_y = vertex_index_to_ij(source_vertex)
+
+  world_map = g_WORLD_MAP
   for i in range(map_size):
     dist[i] = -1
     prev[i] = -1
-    if(world_map[i] != 1):
-      Q_cost.append(i, -1)
+    if(not world_map[i] == 1):
+      Q_cost.append((i, -1))
   dist[source_vertex] = 0
-  while(Q_cost.len() > 0):
-    distance = sys.maxint
+  while(len(Q_cost) > 0):
+    distance = 10000
     index = -1
     #Find shortest in Q
-    for i in range(map_size):
-      if(Q[i][1] != -1 and Q[i][1] < distance):
+    for i in range(len(Q_cost)):
+      Q_current = Q_cost[i]
+      if(not Q_current[1] == -1 and Q_currnt[1] < distance):
         index = i
-        distance = Q[i][1]
-    u = Q.pop(i)
+        distance = Q_cost[i][1]
+    u = Q_cost.pop(i)
     u_x, u_y = vertex_index_to_ij(u[0]) 
     #Top neighbor
     v = ij_to_vertex_index(u_x, u_y+1)
     alt = u[1] + get_travel_cost(u, v)  
-    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+    if(not alt == 1000 and (distance[v] == -1 or alt < distance[v])):
         distance[v] = alt
-        Q[v][1] = alt
+        Q_cost[v][1] = alt
         prev[v] = u[0]
     #Bottom neighbor
     v = ij_to_vertex_index(u_x, u_y-1)
     alt = u[1] + get_travel_cost(u, v)  
-    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+    if(not alt == 1000 and (distance[v] == -1 or alt < distance[v])):
         distance[v] = alt
-        Q[v][1] = alt
+        Q_cost[v][1] = alt
         prev[v] = u[0]
     #Right neighbor
     v = ij_to_vertex_index(u_x+1, u_y)
     alt = u[1] + get_travel_cost(u, v)  
-    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+    if(not alt == 1000 and (distance[v] == -1 or alt < distance[v])):
         distance[v] = alt
-        Q[v][1] = alt
+        Q_cost[v][1] = alt
         prev[v] = u[0]
     #Left neigbhor 
     v = ij_to_vertex_index(u_x-1, u_y)
     alt = u[1] + get_travel_cost(u, v)  
-    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+    if(not alt == 1000 and (distance[v] == -1 or alt < distance[v])):
         distance[v] = alt
-        Q[v][1] = alt
+        Q_cost[v][1] = alt
         prev[v] = u[0]
 
   # Return results of algorithm run
@@ -291,7 +295,9 @@ def part_1():
   print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
   print("Source: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
-  s = reconstruct_path(run_dijkstra(g_src_coordinates), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
+  sourc_int = ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1])
+
+  s = reconstruct_path(run_dijkstra(sourc_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
   for p in s:
     print(p + " -> ")
   '''
