@@ -127,14 +127,12 @@ def get_travel_cost(vertex_source, vertex_dest):
   global g_NUM_Y_CELLS, g_NUM_X_CELLS
   map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
   answer = 1000
-  if (vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size):
-    answer = 1000
-  else:
+  #Check vertices not out of bounds
+  if(!(vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size)):
     source_x, source_y = vertex_index_to_ij(vertex_source)
     destination_x, destination_y = vertex_index_to_ij(vertex_dest)    
-    if(world_map[source_x][source_y] == 1 or world_map[destination_x][destination_y]):
-      answer = 1000
-    else:
+    #Check neither vetex occupied
+    if(!(world_map[source_x][source_y] == 1 or world_map[destination_x][destination_y])):
       if(source_x == destination_x and (source_y == destination_y + 1 or source_y == destination_y-1)):
         answer = 1
       elif(source_y == destination_y and (source_x == destination_x + 1 or source_x == destination_x-1)):
