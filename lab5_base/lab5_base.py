@@ -128,13 +128,15 @@ def get_travel_cost(vertex_source, vertex_dest):
   map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
   answer = 1000
   #Check vertices not out of bounds
-  if(!(vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size)):
+  if(not(vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size)):
     source_x, source_y = vertex_index_to_ij(vertex_source)
     destination_x, destination_y = vertex_index_to_ij(vertex_dest)    
     #Check neither vetex occupied
-    if(!(world_map[source_x][source_y] == 1 or world_map[destination_x][destination_y])):
+    if(not(world_map[source_x][source_y] == 1 or world_map[destination_x][destination_y])):
+      #IF in same row and off by a column
       if(source_x == destination_x and (source_y == destination_y + 1 or source_y == destination_y-1)):
         answer = 1
+      #If in same column and off by a row
       elif(source_y == destination_y and (source_x == destination_x + 1 or source_x == destination_x-1)):
         answer = 1
   return answer
@@ -163,6 +165,52 @@ def run_dijkstra(source_vertex):
   prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
 
   # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
+  map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
+  source_x, source_y = vertex_index_to_ij(source_vertex)
+  for i in range(map_size):
+    dist[i] = -1
+    prev[i] = -1
+    if(world_map[i] != 1):
+      Q_cost.append(i, -1)
+  dist[source_vertex] = 0
+  while(Q_cost.len() > 0):
+    distance = sys.maxint
+    index = -1
+    #Find shortest in Q
+    for i in range(map_size):
+      if(Q[i][1] != -1 and Q[i][1] < distance):
+        index = i
+        distance = Q[i][1]
+    u = Q.pop(i)
+    u_x, u_y = vertex_index_to_ij(u[0]) 
+    #Top neighbor
+    v = ij_to_vertex_index(u_x, u_y+1)
+    alt = u[1] + get_travel_cost(u, v)  
+    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+        distance[v] = alt
+        Q[v][1] = alt
+        prev[v] = u[0]
+    #Bottom neighbor
+    v = ij_to_vertex_index(u_x, u_y-1)
+    alt = u[1] + get_travel_cost(u, v)  
+    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+        distance[v] = alt
+        Q[v][1] = alt
+        prev[v] = u[0]
+    #Right neighbor
+    v = ij_to_vertex_index(u_x+1, u_y)
+    alt = u[1] + get_travel_cost(u, v)  
+    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+        distance[v] = alt
+        Q[v][1] = alt
+        prev[v] = u[0]
+    #Left neigbhor 
+    v = ij_to_vertex_index(u_x-1, u_y)
+    alt = u[1] + get_travel_cost(u, v)  
+    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+        distance[v] = alt
+        Q[v][1] = alt
+        prev[v] = u[0]
 
   # Return results of algorithm run
   return prev
