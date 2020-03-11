@@ -17,10 +17,10 @@ MAP_SIZE_X = None
 MAP_SIZE_Y = None
 
 # Default parameters will create a 4x4 grid to test with
-g_MAP_SIZE_X = 2. # 2m wide
+g_MAP_SIZE_X = 1.5 # 2m wide
 g_MAP_SIZE_Y = 1.5 # 1.5m tall
 g_MAP_RESOLUTION_X = 0.5 # Each col represents 50cm
-g_MAP_RESOLUTION_Y = 0.375 # Each row represents 37.5cm
+g_MAP_RESOLUTION_Y = 0.5 # Each row represents 37.5cm
 g_NUM_X_CELLS = int(g_MAP_SIZE_X // g_MAP_RESOLUTION_X) # Number of columns in the grid map
 g_NUM_Y_CELLS = int(g_MAP_SIZE_Y // g_MAP_RESOLUTION_Y) # Number of rows in the grid map
 
@@ -172,6 +172,8 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
 
 
 def render_map(map_array):
+
+  global g_NUM_X_CELLS
   '''
   TODO-
     Display the map in the following format:
@@ -194,19 +196,43 @@ def render_map(map_array):
     Make sure to display your map so that I,J coordinate (0,0) is in the bottom left.
     (To do this, you'll probably want to iterate from row 'J-1' to '0')
   '''
-  pass
+  lines = []
+  line = ""
 
+  for i in range(len(map_array)):
+
+      if (map_array[i] == 1):
+          line = line + "[ ]"
+      else:
+          line = line + " . "
+
+      if (i%g_NUM_X_CELLS == g_NUM_X_CELLS - 1):
+          lines.append(line)
+          line = ""
+
+  for i in range(len(lines)):
+      print(lines[len(lines) - i - 1])
 
 def part_1():
   global g_WORLD_MAP
 
+  global g_dest_coordinates
+  global g_src_coordinates
+
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
 
+  g_WORLD_MAP = [0, 0, 0, 0, 1, 1, 0, 0, 0]
 
   # Use render_map to render your initialized obstacle map
+  render_map(g_WORLD_MAP)
 
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
+  print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
+  print("Source: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
+  s = reconstruct_path(run_dijkstra(g_src_coordinates), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
+  for p in s:
+    print(p + " -> ")
   '''
   TODO-
     Display the final path in the following format:
