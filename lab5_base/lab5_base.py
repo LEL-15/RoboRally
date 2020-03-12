@@ -193,7 +193,7 @@ def run_dijkstra(source_vertex):
     #Bottom neighbor
     v = ij_to_vertex_index(u_x, u_y-1)
     alt = u[1] + get_travel_cost(u, v)  
-    if(alt != 1000 and (distance[v] == -1 or alt < distance[v])):
+    if(alt = 1000 and (distance[v] == -1 or alt < distance[v])):
         distance[v] = alt
         Q[v][1] = alt
         prev[v] = u[0]
