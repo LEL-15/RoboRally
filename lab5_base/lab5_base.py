@@ -224,8 +224,6 @@ def run_dijkstra(source_vertex):
         if(dist[v] == -1 or alt < dist[v]):
           dist[v] = alt
           prev[v] = u[0]
-    print(dist)
-
   # Return results of algorithm run
   return prev
 
@@ -306,9 +304,6 @@ def part_1():
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
   source_int = ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1])
-
-  t = run_dijkstra(source_int)
-  print(t)
   s = reconstruct_path(run_dijkstra(source_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
   for p in s:
     print(p + " -> ")
