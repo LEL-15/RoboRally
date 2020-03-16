@@ -298,7 +298,7 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
 
 def render_map(map_array, path_array):
 
-  global g_NUM_X_CELLS
+  global g_NUM_X_CELLS, g_NUM_Y_CELLS
   '''
   TODO-
     Display the map in the following format:
@@ -338,19 +338,21 @@ def part_1():
 
   global g_dest_coordinates
   global g_src_coordinates
+  global g_NUM_X_CELLS, g_NUM_Y_CELLS
 
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
 
-  g_WORLD_MAP = [0, 0, 0, 0, 1, 1, 0, 0, 0]
-  g_NUM_X_CELLS = 3
-  g_NUM_Y_CELLS = 3
+  g_WORLD_MAP = [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0]
+  g_NUM_X_CELLS = 4
+  g_NUM_Y_CELLS = 4
 
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
   print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
   source_int = ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1])
-  path = reconstruct_path(run_dijkstra(source_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), 8)
+  dest_int = ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1])
+  path = reconstruct_path(run_dijkstra(source_int), source_int, dest_int)
   # Use render_map to render your initialized obstacle map
   render_map(g_WORLD_MAP, path)
   
@@ -405,8 +407,8 @@ def part_2(args):
 
   print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
-  src = ij_to_vertex_index(math.floor(16.6667*g_src_coordinates[0]), math.floor(16.6667*g_src_coordinates[1]))
-  dest = ij_to_vertex_index(math.floor(16.6667*g_dest_coordinates[0]), math.floor(16.6667*g_dest_coordinates[1]))
+  src = ij_to_vertex_index(math.floor(16.6667*float(g_src_coordinates[0])), math.floor(16.6667*float(g_src_coordinates[1])))
+  dest = ij_to_vertex_index(math.floor(16.6667*float(g_dest_coordinates[0])), math.floor(16.6667*float(g_dest_coordinates[1])))
   path = reconstruct_path(run_dijkstra(int(src)), int(src), int(dest))
   render_map(g_WORLD_MAP, path)
   if(path != []):
@@ -442,6 +444,5 @@ if __name__ == "__main__":
   parser.add_argument('-o','--obstacles', nargs='?', type=str, default='obstacles_test1.png', help='Black and white image showing the obstacle locations')
   args = parser.parse_args()
 
-
-  #part_1()
-  part_2(args)
+  part_1()
+  #part_2(args)
