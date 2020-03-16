@@ -1,7 +1,3 @@
-'''
- IMPORTANT: Read through the code before beginning implementation!
- Your solution should fill in the various "TODO" items within this starter code.
-'''
 import copy
 import math
 import random
@@ -81,7 +77,6 @@ def ij_to_vertex_index(i,j):
   '''
   i: Column of grid map
   j: Row of grid map
-
   returns integer 'vertex index'
   '''
   global g_NUM_X_CELLS
@@ -92,7 +87,6 @@ def ij_coordinates_to_xy_coordinates(i,j):
   '''
   i: Column of grid map
   j: Row of grid map
-
   returns (X, Y) coordinates in meters at the center of grid cell (i,j)
   '''
   global g_MAP_RESOLUTION_X, g_MAP_RESOLUTION_Y
@@ -102,7 +96,6 @@ def xy_coordinates_to_ij_coordinates(x,y):
   '''
   i: Column of grid map
   j: Row of grid map
-
   returns (X, Y) coordinates in meters at the center of grid cell (i,j)
   '''
   global g_MAP_RESOLUTION_X, g_MAP_RESOLUTION_Y
@@ -118,7 +111,6 @@ def get_travel_cost(vertex_source, vertex_dest):
   '''
       This function should return 1 if:
         vertex_source and vertex_dest are neighbors in a 4-connected grid (i.e., N,E,S,W of each other but not diagonal) and neither is occupied in g_WORLD_MAP (i.e., g_WORLD_MAP isn't 1 for either)
-
       This function should return 1000 if:
         vertex_source corresponds to (i,j) coordinates outside the map
         vertex_dest corresponds to (i,j) coordinates outside the map
@@ -128,6 +120,7 @@ def get_travel_cost(vertex_source, vertex_dest):
   map_size = g_NUM_Y_CELLS * g_NUM_X_CELLS
   answer = 1000
   #Check vertices not out of bounds
+  """
   if(not(vertex_source < 0 or vertex_dest < 0 or vertex_source >= map_size or vertex_dest >= map_size)):
     source_x, source_y = vertex_index_to_ij(vertex_source)
     destination_x, destination_y = vertex_index_to_ij(vertex_dest)    
@@ -139,7 +132,15 @@ def get_travel_cost(vertex_source, vertex_dest):
       #If in same column and off by a row
       elif(source_y == destination_y and (source_x == destination_x + 1 or source_x == destination_x-1)):
         answer = 1
-  return answer
+  """
+  if vertex_source < len(g_WORLD_MAP) and vertex_dest < len(g_WORLD_MAP):
+    srcx, srcy = vertex_index_to_ij(vertex_source)
+    destx, desty = vertex_index_to_ij(vertex_dest)
+    dist = abs(srcx - destx) + abs(srcy - desty)
+
+    if dist == 1 and g_WORLD_MAP[vertex_source] != 1 and g_WORLD_MAP[vertex_dest] != 1:
+      return 1
+  return 1000
 
 
 
@@ -147,29 +148,64 @@ def run_dijkstra(source_vertex):
   '''
   source_vertex: vertex index to find all paths back to
   returns: 'prev' array from a completed Dijkstra's algorithm run
-
   Function to return an array of ints corresponding to the 'prev' variable in Dijkstra's algorithm
   The 'prev' array stores the next vertex on the best path back to source_vertex.
   Thus, the returned array prev can be treated as a lookup table:  prev[vertex_index] = next vertex index on the path back to source_vertex
   '''
   global g_NUM_X_CELLS, g_NUM_Y_CELLS
   global g_WORLD_MAP
-
+  
   # Array mapping vertex_index to distance of shortest path from vertex_index to source_vertex.
-  dist = [-1] * g_NUM_X_CELLS * g_NUM_Y_CELLS
-
+  dist = [float("inf")] * g_NUM_X_CELLS * g_NUM_Y_CELLS
+  prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
   # Queue for identifying which vertices are up to still be explored:
   # Will contain tuples of (vertex_index, cost), sorted such that the min cost is first to be extracted (explore cheapest/most promising vertices first)
-  Q_cost = []
+  Q_cost = [(v, get_travel_cost(source_vertex, v)) for v in range(g_NUM_X_CELLS*g_NUM_Y_CELLS)]
+  Q_cost[source_vertex] = (source_vertex, 0)
+
+  while(Q_cost):
+    v = min(Q_cost,key=lambda t: t[1])
+    dist[v[0]] = v[1]
+    n = []
+    x,y = vertex_index_to_ij(v[0])
+    n.append(ij_to_vertex_index(x,y+1))
+    n.append(ij_to_vertex_index(x,y-1))
+    n.append(ij_to_vertex_index(x+1,y))
+    n.append(ij_to_vertex_index(x-1,y))
+    Q_cost.remove(v)
+    for u in n:
+      for i in Q_cost:
+        if u == i[0]:
+          val = get_travel_cost(v[0],u) + v[1]
+          if val < dist[u]:
+            dist[u] = val
+            prev[u] = v[0]
+            Q_cost.remove(i)
+            Q_cost.insert(0,(u,dist[u]))
 
   # Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
-  prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
+  
 
   # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
+
+  """
   map_size = g_NUM_X_CELLS * g_NUM_Y_CELLS
   source_x, source_y = vertex_index_to_ij(source_vertex)
 
   world_map = g_WORLD_MAP
+  for i in range(map_size):
+    for j in range(map_size):
+      #curr_x, curr_y = vertex_index_to_ij(j)
+      val = dist[j] + get_travel_cost(i,j)
+      print(val)
+      #print(val)
+      if val < dist[j]:
+        Q_cost = val
+        dist[j] = val
+        prev[j] = i
+  """
+
+  """
   for i in range(map_size):
     dist[i] = float('inf')
     prev[i] = -1
@@ -225,6 +261,7 @@ def run_dijkstra(source_vertex):
           dist[v] = alt
           prev[v] = u[0]
   # Return results of algorithm run
+  """
   return prev
 
 
@@ -236,12 +273,27 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
   If there is no path between source_vertex and dest_vertex, as indicated by hitting a '-1' on the
   path from dest to source, return an empty list.
   '''
-  final_path = []
 
   # TODO: Insert your code here
+  print(source_vertex)
+  print(dest_vertex)
+  final_path = []
+  current = dest_vertex
+  while current != source_vertex:
+    if current == -1:
+      return []
+    else:
+      final_path.insert(0,current)
+      #print(prev)
+      #print(current)
+      current = prev[current]
 
+  final_path.insert(0,source_vertex)
+  # TODO: Insert your code here
 
+  #print(final_path)
   return final_path
+
 
 
 def render_map(map_array):
@@ -252,7 +304,6 @@ def render_map(map_array):
     Display the map in the following format:
     Use " . " for free grid cells
     Use "[ ]" for occupied grid cells
-
     Example:
     For g_WORLD_MAP = [0, 0, 1, 0,
                        0, 1, 1, 0,
@@ -264,27 +315,20 @@ def render_map(map_array):
       .  .  .  .
       . [ ][ ] .
       .  . [ ] .
-
-
     Make sure to display your map so that I,J coordinate (0,0) is in the bottom left.
     (To do this, you'll probably want to iterate from row 'J-1' to '0')
   '''
-  lines = []
-  line = ""
+  #lines = [["" for i in range(g_NUM_X_CELLS)] for j in range(g_NUM_Y_CELLS)]
+  #line = ""
 
-  for i in range(len(map_array)):
+  for i in range(g_NUM_Y_CELLS):
+    for j in range(g_NUM_X_CELLS):
+      if g_WORLD_MAP[ij_to_vertex_index(j,i)] == 0:
+        print(" . "),
+      elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 1:
+        print("[ ]"),
+    print('\n')
 
-      if (map_array[i] == 1):
-          line = line + "[ ]"
-      else:
-          line = line + " . "
-
-      if (i%g_NUM_X_CELLS == g_NUM_X_CELLS - 1):
-          lines.append(line)
-          line = ""
-
-  for i in range(len(lines)):
-      print(lines[len(lines) - i - 1])
 
 def part_1():
   global g_WORLD_MAP
@@ -295,6 +339,8 @@ def part_1():
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
 
   g_WORLD_MAP = [0, 0, 0, 0, 1, 1, 0, 0, 0]
+  g_NUM_X_CELLS = 3
+  g_NUM_Y_CELLS = 3
 
   # Use render_map to render your initialized obstacle map
   render_map(g_WORLD_MAP)
@@ -304,9 +350,20 @@ def part_1():
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
   source_int = ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1])
-  s = reconstruct_path(run_dijkstra(source_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
-  for p in s:
-    print(p + " -> ")
+  path = reconstruct_path(run_dijkstra(source_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), 8)
+    #ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
+  #print(path)
+  if(path != []):
+    if(len(path) > 1):
+      for i in range(len(path)):
+        if i != len(path) - 1:
+          print(str(path[i]) + " -> "),
+        else:
+          print(str(path[i])),
+    else:
+      print(path[0])
+  else:
+    print("ERROR: NO POSSIBLE PATH")
   '''
   TODO-
     Display the final path in the following format:
@@ -320,6 +377,8 @@ def part_2(args):
   global g_dest_coordinates
   global g_src_coordinates
   global g_WORLD_MAP
+  global g_NUM_X_CELLS
+  global g_NUM_Y_CELLS
 
   g_src_coordinates = (args.src_coordinates[0], args.src_coordinates[1])
   g_dest_coordinates = (args.dest_coordinates[0], args.dest_coordinates[1])
@@ -327,6 +386,41 @@ def part_2(args):
   # pixel_grid has intensity values for all the pixels
   # You will have to convert it to the earlier 0 and 1 matrix yourself
   pixel_grid = _load_img_to_intensity_matrix(args.obstacles)
+  x = np.arange(0,len(pixel_grid),40)
+  y = np.arange(0,len(pixel_grid[0]),40)
+  obstacle = False
+  g_NUM_X_CELLS = 30
+  g_NUM_Y_CELLS = 20
+  g_WORLD_MAP = [0]*g_NUM_X_CELLS*g_NUM_Y_CELLS
+  for i in x:
+    for j in y:
+      obstacle = False
+      for k in range(i,i+40):
+        for l in range(j,j+40):
+          if pixel_grid[k][l] == 255:
+            obstacle = True
+      if obstacle == True:
+        loc = ij_to_vertex_index(j/40,i/40)
+        g_WORLD_MAP[loc] = 1
+
+  print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
+  print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
+  src = ij_to_vertex_index(math.floor(16.6667*g_src_coordinates[0]), math.floor(16.6667*g_src_coordinates[1]))
+  dest = ij_to_vertex_index(math.floor(16.6667*g_dest_coordinates[0]), math.floor(16.6667*g_dest_coordinates[1]))
+  path = reconstruct_path(run_dijkstra(int(src)), int(src), int(dest))
+  render_map(g_WORLD_MAP)
+  if(path != []):
+    if(len(path) > 1):
+      for i in range(len(path)):
+        if i != len(path) - 1:
+          print(str(path[i]) + " -> "),
+        else:
+          print(str(path[i])),
+    else:
+      print(path[0])
+  else:
+    print("ERROR: NO POSSIBLE PATH")
+  #print(g_WORLD_MAP)
 
   '''
   TODO -
@@ -349,5 +443,5 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
 
-  part_1()
-  # part_2(args)
+  #part_1()
+  part_2(args)
