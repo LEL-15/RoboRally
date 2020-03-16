@@ -296,7 +296,7 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
 
 
 
-def render_map(map_array):
+def render_map(map_array, path_array):
 
   global g_NUM_X_CELLS
   '''
@@ -323,7 +323,10 @@ def render_map(map_array):
 
   for i in range(g_NUM_Y_CELLS):
     for j in range(g_NUM_X_CELLS):
-      if g_WORLD_MAP[ij_to_vertex_index(j,i)] == 0:
+      coordinate = ij_to_vertex_index(j, i)
+      if coordinate in path_array:
+        print(" x "),
+      elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 0:
         print(" . "),
       elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 1:
         print("[ ]"),
@@ -342,17 +345,22 @@ def part_1():
   g_NUM_X_CELLS = 3
   g_NUM_Y_CELLS = 3
 
-  # Use render_map to render your initialized obstacle map
-  render_map(g_WORLD_MAP)
-
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
   print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
 
   source_int = ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1])
   path = reconstruct_path(run_dijkstra(source_int), ij_to_vertex_index(g_src_coordinates[0], g_src_coordinates[1]), 8)
-    #ij_to_vertex_index(g_dest_coordinates[0], g_dest_coordinates[1]))
-  #print(path)
+  # Use render_map to render your initialized obstacle map
+  render_map(g_WORLD_MAP, path)
+  
+  '''
+  TODO-
+    Display the final path in the following format:
+    Source: (0,0)
+    Goal: (3,1)
+    0 -> 1 -> 2 -> 6 -> 7
+  '''
   if(path != []):
     if(len(path) > 1):
       for i in range(len(path)):
@@ -364,14 +372,6 @@ def part_1():
       print(path[0])
   else:
     print("ERROR: NO POSSIBLE PATH")
-  '''
-  TODO-
-    Display the final path in the following format:
-    Source: (0,0)
-    Goal: (3,1)
-    0 -> 1 -> 2 -> 6 -> 7
-  '''
-
 
 def part_2(args):
   global g_dest_coordinates
@@ -408,7 +408,7 @@ def part_2(args):
   src = ij_to_vertex_index(math.floor(16.6667*g_src_coordinates[0]), math.floor(16.6667*g_src_coordinates[1]))
   dest = ij_to_vertex_index(math.floor(16.6667*g_dest_coordinates[0]), math.floor(16.6667*g_dest_coordinates[1]))
   path = reconstruct_path(run_dijkstra(int(src)), int(src), int(dest))
-  render_map(g_WORLD_MAP)
+  render_map(g_WORLD_MAP, path)
   if(path != []):
     if(len(path) > 1):
       for i in range(len(path)):
