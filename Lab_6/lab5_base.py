@@ -429,6 +429,7 @@ def callback_update_state(data):
 def lab_6(args):
   global publisher_odom, pose2d_sparki_odometry
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
+  publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
   init()
   g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
   g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
@@ -436,6 +437,8 @@ def lab_6(args):
   start = Pose2D();
   start.x = g_src_coordinates[0]
   start.y = g_src_coordinates[1]
+
+  print(start)
 
   publisher_odom.publish(start)
   publisher_render.publish(Empty())
