@@ -209,10 +209,10 @@ def run_dijkstra(source_vertex):
     if prev[i] != -1:
       tmp = vertex_index_to_ij(prev[i])
       if not tmp[1] == (g_NUM_X_CELLS - 1) and not tmp[0] == (g_NUM_Y_CELLS - 1): 
-        coord = (tmp[0]*ratio + ratio/2,tmp[1]*ratio + ratio/2)
+        coord = ((tmp[0]*ratio + ratio/2)/666.66666,(tmp[1]*ratio + ratio/2)/666.66666)
         coords.append(coord)
       else:
-        coord = (tmp[0]*ratio - ratio/2,tmp[1]*ratio - ratio/2)
+        coord = ((tmp[0]*ratio - ratio/2)/666.66666,(tmp[1]*ratio - ratio/2)/666.66666)
         coords.append(coord)
     else:
       coords.append(-1)
