@@ -85,10 +85,12 @@ def recv_render(msg):
     g_render_requested = True
 
 def set_odometry(msg):
-    global g_pose
-    g_pose.x = msg.x
-    g_pose.y = MAP_SIZE_Y * MAP_RESOLUTION - msg.y
-    g_pose.theta = -msg.theta
+  print("Here")
+  print("Here with pose", msg)
+  global g_pose
+  g_pose.x = msg.x
+  g_pose.y = MAP_SIZE_Y * MAP_RESOLUTION - msg.y
+  g_pose.theta = -msg.theta
 
 def set_servo(msg):
     global g_servo_angle

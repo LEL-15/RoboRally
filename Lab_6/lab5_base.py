@@ -493,19 +493,44 @@ def callback_update_state(data):
 
 def lab_6(args):
   init()
-  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
-  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
-  
-  pose2d_sparki_odometry.x = g_src_coordinates[0]
-  pose2d_sparki_odometry.y = g_src_coordinates[1]
+  global publisher_odom, pose2d_sparki_odometry
 
-  publisher_odom.publish(pose2d_sparki_odometry)
+  g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
+  g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
+  
+  start = Pose2D();
+  start.x = g_src_coordinates[0]
+  start.y = g_src_coordinates[1]
+  print(start)
+  publisher_odom.publish(start)
 
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_render.publish(Empty())
 
+  #Load map
+  # pixel_grid has intensity values for all the pixels
+  # You will have to convert it to the earlier 0 and 1 matrix yourself
+  pixel_grid = _load_img_to_intensity_matrix(args.obstacles)
+  x = np.arange(0,len(pixel_grid),40)
+  y = np.arange(0,len(pixel_grid[0]),40)
+  obstacle = False
+  g_NUM_X_CELLS = 30
+  g_NUM_Y_CELLS = 20
+  g_WORLD_MAP = [0]*g_NUM_X_CELLS*g_NUM_Y_CELLS
+  for i in x:
+    for j in y:
+      obstacle = False
+      for k in range(i,i+40):
+        for l in range(j,j+40):
+          if pixel_grid[k][l] == 255:
+            obstacle = True
+      if obstacle == True:
+        loc = ij_to_vertex_index(j/40,i/40)
+        g_WORLD_MAP[loc] = 1
+
   #Set the waypoints
-  #Iterate over waypoints
+
+  #Iterate over waypoints and go to them
 
 
 
