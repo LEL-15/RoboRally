@@ -427,7 +427,8 @@ def callback_update_state(data):
         populate_map_from_ping(ping_distance)
 
 def lab_6(args):
-  global publisher_render, publisher_odom, pose2d_sparki_odometry
+  global publisher_odom, pose2d_sparki_odometry
+  publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   init()
   g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
   g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
