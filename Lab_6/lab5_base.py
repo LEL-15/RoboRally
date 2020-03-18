@@ -279,6 +279,7 @@ def render_map(map_array, path_array):
   for i in range(g_NUM_Y_CELLS):
     for j in range(g_NUM_X_CELLS):
       coordinate = ij_to_vertex_index(j, i)
+      print("COORD " + str(coordinate))
       if coordinate in path_array:
         print(" x "),
       elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 0:
@@ -357,7 +358,7 @@ def part_2(args):
           if pixel_grid[k][l] == 255:
             obstacle = True
       if obstacle == True:
-        loc = ij_to_vertex_index(j/40,i/40)
+        loc = ij_to_vertex_index(i/40,j/40)
         g_WORLD_MAP[loc] = 1
 
   print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
@@ -428,6 +429,8 @@ def callback_update_state(data):
 
 def lab_6(args):
   global publisher_odom, pose2d_sparki_odometry
+  global g_NUM_X_CELLS, g_NUM_Y_CELLS
+
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
   init()
@@ -445,7 +448,45 @@ def lab_6(args):
 
   #Set the waypoints
   #Iterate over waypoints
-
+  pixel_grid = _load_img_to_intensity_matrix(args.obstacles)
+  x = np.arange(0,len(pixel_grid),40)
+  y = np.arange(0,len(pixel_grid[0]),40)
+  obstacle = False
+  g_NUM_X_CELLS = 30
+  g_NUM_Y_CELLS = 20
+  g_WORLD_MAP = []
+  for i in range(g_NUM_Y_CELLS):
+    for j in range(g_NUM_X_CELLS):
+      g_WORLD_MAP.append(0)
+  print(len(g_WORLD_MAP))
+  for i in x:
+    for j in y:
+      obstacle = False
+      for k in range(i,i+40):
+        for l in range(j,j+40):
+          if pixel_grid[k][l] == 255:
+            obstacle = True
+      if obstacle == True:
+        loc = ij_to_vertex_index(j/40,i/40)
+        g_WORLD_MAP[loc] = 1
+  print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
+  print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(1.2 - float(g_dest_coordinates[1])) + ")" )
+  src = ij_to_vertex_index(math.floor(16.6667*float(g_src_coordinates[0])), math.floor(16.6667*float(g_src_coordinates[1])))
+  dest = ij_to_vertex_index(math.floor(16.6667*float(g_dest_coordinates[0])), math.floor(16.6667*float(g_dest_coordinates[1])))
+  prev,coords = run_dijkstra(int(src))
+  path = reconstruct_path(prev, int(src), int(dest))
+  render_map(g_WORLD_MAP, path)
+  if(path != []):
+    if(len(path) > 1):
+      for i in range(len(path)):
+        if i != len(path) - 1:
+          print(str(path[i]) + " -> "),
+        else:
+          print(str(path[i])),
+    else:
+      print(path[0])
+  else:
+    print("ERROR: NO POSSIBLE PATH")
 
 
 
