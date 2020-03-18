@@ -427,6 +427,7 @@ def callback_update_state(data):
         populate_map_from_ping(ping_distance)
 
 def lab_6(args):
+  global publisher_render, publisher_odom, pose2d_sparki_odometry
   init()
   g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
   g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
@@ -435,7 +436,7 @@ def lab_6(args):
   start.x = g_src_coordinates[0]
   start.y = g_src_coordinates[1]
 
-  publisher_odom.publish(pose2d_sparki_odometry)
+  publisher_odom.publish(start)
   publisher_render.publish(Empty())
 
   #Set the waypoints
