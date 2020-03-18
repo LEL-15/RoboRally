@@ -203,86 +203,21 @@ def run_dijkstra(source_vertex):
             Q_cost.remove(i)
             Q_cost.insert(0,(u,dist[u]))
 
-  # Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
-  
+  ratio = 1200/g_NUM_X_CELLS
+  coords = []
+  for i in range(len(prev)):
+    if prev[i] != -1:
+      tmp = vertex_index_to_ij(prev[i])
+      if not tmp[1] == (g_NUM_X_CELLS - 1) and not tmp[0] == (g_NUM_Y_CELLS - 1): 
+        coord = (tmp[0]*ratio + ratio/2,tmp[1]*ratio + ratio/2)
+        coords.append(coord)
+      else:
+        coord = (tmp[0]*ratio - ratio/2,tmp[1]*ratio - ratio/2)
+        coords.append(coord)
+    else:
+      coords.append(-1)
 
-  # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
-
-  """
-  map_size = g_NUM_X_CELLS * g_NUM_Y_CELLS
-  source_x, source_y = vertex_index_to_ij(source_vertex)
-
-  world_map = g_WORLD_MAP
-  for i in range(map_size):
-    for j in range(map_size):
-      #curr_x, curr_y = vertex_index_to_ij(j)
-      val = dist[j] + get_travel_cost(i,j)
-      print(val)
-      #print(val)
-      if val < dist[j]:
-        Q_cost = val
-        dist[j] = val
-        prev[j] = i
-  """
-
-  """
-  for i in range(map_size):
-    dist[i] = float('inf')
-    prev[i] = -1
-    if(not world_map[i] == 1):
-      Q_cost.append((i, -1))
-  dist[source_vertex] = 0
-  while(len(Q_cost) > 0):
-    distance = 1000
-    index = -1
-    #Find shortest in Q
-    for i in range(len(Q_cost)):
-      Q_current = Q_cost[i]
-      if((not dist[Q_current[0]] ==-1) and dist[Q_current[0]] < distance):
-        index = i
-        Q_cost[i] = (Q_cost[i][0], dist[Q_cost[i][0]])
-        distance = Q_cost[i][1]
-    u = Q_cost.pop(index)
-    u_x, u_y = vertex_index_to_ij(u[0])
-    #Top neighbor
-    v = ij_to_vertex_index(u_x, u_y-1)
-    adjacent = get_travel_cost(u[0], v)
-    if(adjacent != 1000):
-      alt = u[1] + adjacent
-      if(v > 0 and v < map_size):
-        if(dist[v] == -1 or alt < dist[v]):
-          dist[v] = alt
-          prev[v] = u[0]
-    #Bottom neighbor
-    v = ij_to_vertex_index(u_x, u_y+1)
-    adjacent = get_travel_cost(u[0], v)
-    if(adjacent != 1000):
-      alt = u[1] + adjacent
-      if(v > 0 and v < map_size):
-        if(dist[v] == -1 or alt < dist[v]):
-          dist[v] = alt
-          prev[v] = u[0]
-    #Right neighbor
-    v = ij_to_vertex_index(u_x+1, u_y)
-    adjacent = get_travel_cost(u[0], v)
-    if(adjacent != 1000):
-      alt = u[1] + adjacent
-      if(v > 0 and v < map_size):
-        if(dist[v] == -1 or alt < dist[v]):
-          dist[v] = alt
-          prev[v] = u[0]
-    #Left neigbhor 
-    v = ij_to_vertex_index(u_x-1, u_y)
-    adjacent = get_travel_cost(u[0], v)
-    if(adjacent != 1000):
-      alt = u[1] + adjacent
-      if(v > 0 and v < map_size):
-        if(dist[v] == -1 or alt < dist[v]):
-          dist[v] = alt
-          prev[v] = u[0]
-  # Return results of algorithm run
-  """
-  return prev
+  return prev, coords
 
 
 def reconstruct_path(prev, source_vertex, dest_vertex):
@@ -493,44 +428,19 @@ def callback_update_state(data):
 
 def lab_6(args):
   init()
-  global publisher_odom, pose2d_sparki_odometry
-
-  g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
-  g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
+  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
+  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
   
-  start = Pose2D();
-  start.x = g_src_coordinates[0]
-  start.y = g_src_coordinates[1]
-  print(start)
-  publisher_odom.publish(start)
+  pose2d_sparki_odometry.x = g_src_coordinates[0]
+  pose2d_sparki_odometry.y = g_src_coordinates[1]
+
+  publisher_odom.publish(pose2d_sparki_odometry)
 
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_render.publish(Empty())
 
-  #Load map
-  # pixel_grid has intensity values for all the pixels
-  # You will have to convert it to the earlier 0 and 1 matrix yourself
-  pixel_grid = _load_img_to_intensity_matrix(args.obstacles)
-  x = np.arange(0,len(pixel_grid),40)
-  y = np.arange(0,len(pixel_grid[0]),40)
-  obstacle = False
-  g_NUM_X_CELLS = 30
-  g_NUM_Y_CELLS = 20
-  g_WORLD_MAP = [0]*g_NUM_X_CELLS*g_NUM_Y_CELLS
-  for i in x:
-    for j in y:
-      obstacle = False
-      for k in range(i,i+40):
-        for l in range(j,j+40):
-          if pixel_grid[k][l] == 255:
-            obstacle = True
-      if obstacle == True:
-        loc = ij_to_vertex_index(j/40,i/40)
-        g_WORLD_MAP[loc] = 1
-
   #Set the waypoints
-
-  #Iterate over waypoints and go to them
+  #Iterate over waypoints
 
 
 
