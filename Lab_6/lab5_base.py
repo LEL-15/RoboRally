@@ -5,7 +5,27 @@ import argparse
 from PIL import Image
 import numpy as np
 from pprint import pprint
+import rospy
+import json
+import copy
+import time
+from geometry_msgs.msg import Pose2D
+from std_msgs.msg import Float32MultiArray, Empty, String, Int16
 
+#Lab 4 globals
+pose2d_sparki_odometry = None 
+#ATTEMPTED: Create data structure to hold map representation
+world_map = [];
+
+testMap = []
+
+# TODO: Use these variables to hold your publishers and subscribers
+publisher_motor = None
+publisher_odom = None
+publisher_ping = None
+publisher_servo = None
+subscriber_odometry = None
+subscriber_state = None
 g_CYCLE_TIME = .100
 
 # Parameters you might need to use which will be set automatically
@@ -422,17 +442,70 @@ def part_2(args):
       print(path[0])
   else:
     print("ERROR: NO POSSIBLE PATH")
-  #print(g_WORLD_MAP)
 
-  '''
-  TODO -
-  1) Compute the g_WORLD_MAP -- depending on the resolution, you need to decide if your cell is an obstacle cell or a free cell.
-  2) Run Dijkstra's to get the plan
-  3) Show your plan/path on the image
-  Feel free to add more helper functions
-  '''
+def init():
+    #DONE: Set up your publishers and subscribers
+    rospy.init_node("main", anonymous=True)
+    global publisher_motor, publisher_ping, publisher_servo, publisher_odom
+    global subscriber_odometry, subscriber_state
+    global pose2d_sparki_odometry
+    global theta, value_array, ping_distance
+    publisher_motor = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
+    publisher_ping = rospy.Publisher('/sparki/ping_command', Empty, queue_size=10)
+    publisher_servo = rospy.Publisher('/sparki/set_servo', Int16, queue_size=10)
+    publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
+    subscriber_odometry = rospy.Subscriber('/sparki/odometry', Pose2D, callback_update_odometry)
+    subscriber_state = rospy.Subscriber('/sparki/state', String, callback_update_state)
 
-  #### Your code goes here ####
+
+    #DONE: Set up your initial odometry pose (pose2d_sparki_odometry) as a new Pose2D message object
+    pose2d_sparki_odometry = Pose2D()
+    #DONE: Set sparki's servo to an angle pointing inward to the map (e.g., 45)
+    msg = Int16(90)
+    publisher_servo.publish(msg)
+    #ATTEMPTED: Set map values to all be empty
+    for i in range(20):
+        temp = []
+        for j in range(30):
+            temp.append(0)
+        testMap.append(temp)
+    for i in range(280):
+        world_map.append(0);
+def callback_update_odometry(data):
+    # Receives geometry_msgs/Pose2D message
+    #DONE: Copy this data into your local odometry variable
+    global pose2d_sparki_odometry 
+    pose2d_sparki_odometry.x = data.x
+    pose2d_sparki_odometry.y = data.y
+    pose2d_sparki_odometry.theta = data.theta
+    
+
+def callback_update_state(data):
+    global servo, value_array, ping_distance
+    state_dict = json.loads(data.data) # Creates a dictionary object from the JSON string received from the state topic
+    #DONE: Load data into your program's local state variables
+    servo = state_dict["servo"]
+    value_array = state_dict["light_sensors"]
+    #Update map
+    if('ping' in state_dict and state_dict['ping'] != -1):
+        ping_distance = state_dict["ping"]
+        populate_map_from_ping(ping_distance)
+
+def lab_6(args):
+  init()
+  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
+  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
+  
+  pose2d_sparki_odometry.x = g_src_coordinates[0]
+  pose2d_sparki_odometry.y = g_src_coordinates[1]
+
+  publisher_odom.publish(pose2d_sparki_odometry)
+
+  publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
+  publisher_render.publish(Empty())
+
+  #Set the waypoints
+  #Iterate over waypoints
 
 
 
@@ -444,5 +517,6 @@ if __name__ == "__main__":
   parser.add_argument('-o','--obstacles', nargs='?', type=str, default='obstacles_test1.png', help='Black and white image showing the obstacle locations')
   args = parser.parse_args()
 
-  part_1()
-  part_2(args)
+  #part_1()
+  #part_2(args)
+  lab_6(args)
