@@ -382,8 +382,8 @@ def part_2(args):
   global g_NUM_X_CELLS
   global g_NUM_Y_CELLS
 
-  g_src_coordinates = (args.src_coordinates[0], args.src_coordinates[1])
-  g_dest_coordinates = (args.dest_coordinates[0], args.dest_coordinates[1])
+  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
+  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
 
   # pixel_grid has intensity values for all the pixels
   # You will have to convert it to the earlier 0 and 1 matrix yourself
@@ -405,8 +405,8 @@ def part_2(args):
         loc = ij_to_vertex_index(j/40,i/40)
         g_WORLD_MAP[loc] = 1
 
-  print("Source: (" + str(g_src_coordinates[0]) + ", " + str(g_src_coordinates[1]) + ")" )
-  print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(g_dest_coordinates[1]) + ")" )
+  print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
+  print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(1.2 - float(g_dest_coordinates[1])) + ")" )
   src = ij_to_vertex_index(math.floor(16.6667*float(g_src_coordinates[0])), math.floor(16.6667*float(g_src_coordinates[1])))
   dest = ij_to_vertex_index(math.floor(16.6667*float(g_dest_coordinates[0])), math.floor(16.6667*float(g_dest_coordinates[1])))
   path = reconstruct_path(run_dijkstra(int(src)), int(src), int(dest))
@@ -445,4 +445,4 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   part_1()
-  #part_2(args)
+  part_2(args)
