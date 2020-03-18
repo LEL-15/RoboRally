@@ -428,15 +428,14 @@ def callback_update_state(data):
 
 def lab_6(args):
   init()
-  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
-  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
+  g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
+  g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
   
-  pose2d_sparki_odometry.x = g_src_coordinates[0]
-  pose2d_sparki_odometry.y = g_src_coordinates[1]
+  start = Pose2D();
+  start.x = g_src_coordinates[0]
+  start.y = g_src_coordinates[1]
 
   publisher_odom.publish(pose2d_sparki_odometry)
-
-  publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_render.publish(Empty())
 
   #Set the waypoints
