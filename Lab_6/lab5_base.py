@@ -430,7 +430,6 @@ def lab_6(args):
   #Set everything up
   global publisher_odom, pose2d_sparki_odometry
   global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP
-
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
   init()
@@ -463,6 +462,7 @@ def lab_6(args):
       if obstacle == True:
         loc = ij_to_vertex_index(j/40,i/40)
         g_WORLD_MAP[loc] = 1
+
   #Find Path
   print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
   print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(1.2 - float(g_dest_coordinates[1])) + ")" )
@@ -485,8 +485,7 @@ def lab_6(args):
   #Set the waypoints
   
   #Iterate over waypoints
-
-
+  
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Dijkstra on image file")
