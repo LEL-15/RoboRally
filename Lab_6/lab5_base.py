@@ -12,6 +12,7 @@ import time
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float32MultiArray, Empty, String, Int16
 
+
 #Lab 4 globals
 pose2d_sparki_odometry = None 
 #ATTEMPTED: Create data structure to hold map representation
@@ -275,15 +276,15 @@ def render_map(map_array, path_array):
   '''
   #lines = [["" for i in range(g_NUM_X_CELLS)] for j in range(g_NUM_Y_CELLS)]
   #line = ""
-
-  for i in range(g_NUM_Y_CELLS):
-    for j in range(g_NUM_X_CELLS):
-      coordinate = ij_to_vertex_index(j, i)
+  for j in range(g_NUM_Y_CELLS):
+    for i in range(g_NUM_X_CELLS):
+      #pint("")
+      coordinate = ij_to_vertex_index(i, j)
       if coordinate in path_array:
         print(" x "),
-      elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 0:
+      elif g_WORLD_MAP[coordinate] == 0:
         print(" . "),
-      elif g_WORLD_MAP[ij_to_vertex_index(j,i)] == 1:
+      elif g_WORLD_MAP[coordinate] == 1:
         print("[ ]"),
     print('\n')
 
@@ -357,7 +358,7 @@ def part_2(args):
           if pixel_grid[k][l] == 255:
             obstacle = True
       if obstacle == True:
-        loc = ij_to_vertex_index(j/40,i/40)
+        loc = ij_to_vertex_index(i/40,j/40)
         g_WORLD_MAP[loc] = 1
 
   print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
@@ -427,26 +428,144 @@ def callback_update_state(data):
         populate_map_from_ping(ping_distance)
 
 def lab_6(args):
-  init()
-  g_src_coordinates = (args.src_coordinates[0], str(1.2 - float(args.src_coordinates[1])))
-  g_dest_coordinates = (args.dest_coordinates[0], str(1.2 - float(args.dest_coordinates[1])))
-  
-  pose2d_sparki_odometry.x = g_src_coordinates[0]
-  pose2d_sparki_odometry.y = g_src_coordinates[1]
-
-  publisher_odom.publish(pose2d_sparki_odometry)
-
+  #Set everything up
+  global publisher_odom, pose2d_sparki_odometry
+  global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
+  publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
+  init()
+  g_src_coordinates = (args.src_coordinates[0], 1.2 - float(args.src_coordinates[1]))
+  g_dest_coordinates = (args.dest_coordinates[0], 1.2 - float(args.dest_coordinates[1]))
+  
+  start = Pose2D();
+  start.x = g_src_coordinates[0]
+  start.y = g_src_coordinates[1]
+
+  publisher_odom.publish(start)
   publisher_render.publish(Empty())
 
+  #Load Map
+  pixel_grid = _load_img_to_intensity_matrix(args.obstacles)
+  x = np.arange(0,len(pixel_grid),40)
+  y = np.arange(0,len(pixel_grid[0]),40)
+  obstacle = False
+  g_NUM_X_CELLS = 30
+  g_NUM_Y_CELLS = 20
+  g_WORLD_MAP = [0]*g_NUM_X_CELLS*g_NUM_Y_CELLS
+
+  for i in x:
+    for j in y:
+      obstacle = False
+      for k in range(i,i+40):
+        for l in range(j,j+40):
+          if pixel_grid[k][l] == 255:
+            obstacle = True
+      if obstacle == True:
+        loc = ij_to_vertex_index(j/40,i/40)
+        g_WORLD_MAP[loc] = 1
+
+  #Find Path
+  print("\nSource: (" + str(g_src_coordinates[0]) + ", " + str(1.2 - float(g_src_coordinates[1])) + ")" )
+  print("Goal: (" + str(g_dest_coordinates[0]) + ", " + str(1.2 - float(g_dest_coordinates[1])) + ")" )
+  src = ij_to_vertex_index(math.floor(16.6667*float(g_src_coordinates[0])), math.floor(16.6667*float(g_src_coordinates[1])))
+  dest = ij_to_vertex_index(math.floor(16.6667*float(g_dest_coordinates[0])), math.floor(16.6667*float(g_dest_coordinates[1])))
+  prev,coords = run_dijkstra(int(src))
+  path = reconstruct_path(prev, int(src), int(dest))
+  render_map(g_WORLD_MAP, path)
+  if(path != []):
+    if(len(path) > 1):
+      for i in range(len(path)):
+        if i != len(path) - 1:
+          print(str(path[i]) + " -> "),
+        else:
+          print(str(path[i])),
+    else:
+      print(path[0])
+  else:
+    print("ERROR: NO POSSIBLE PATH")
   #Set the waypoints
+  
   #Iterate over waypoints
 
+
+
+    #IK helper functions and variables
+
+
+
+
+# Lab 6 IK variables
+int prev = NULL
+int path = NULL
+motor_message = Float32MultiArray()
+
+def wheelRotation():
+  moveLeft = value_array[1]
+  moveForward = vaule_array[2]
+  moveRight = value_array[3]
+
+  if(moveForward < change_to_radians(1)):
+    motor_message.data = [1.0, 1.0]
+  elif(moveLeft < -change_to_radians(1)):
+    motor_message.data = [-1.0, 1.0] #moving left wheel backwards to turn left
+  elif(motorRight > change_to_radians(1)):
+    motor_message.data = [1.0, -1.0] # moving right wheel backwards to turn right
+
+  publisher_motor.publish(motor_message)
+  msg = Empty()
+  publisher_ping.publish(msg)
+
+def change_to_radians(int deg):
+   return deg * (3.14159 / 180)
+
+float deg_error = 0.
+
+
 def loop():
+   long begin = millis()
+   long end = 0
+   int path_index = 0
+
    callback_update_odometry(data)
-   
 
+   switch(subscriber_state){
+    case START:
+      prev = run_dijkstra(world_map, ij_coordinates_to_xy_coordinates(0, 0))
+      path = reconstruct_path(prev, ij_coordinates_to_xy_coordinates(0, 0), xy_coordinates_to_ij_coordinates(0, 0))
+      if path[0] == ij_coordinates_to_xy_coordinates(0, 0):
+        subsctiber_state = PATH_FOUND
 
+    case PATH_FOUND:
+      int i
+      int j
+      vertex_index_to_ij(path[path_index + 1], &i, &j)
+      ij_coordinates_to_xy_coordinates(i, j, &pose2d_sparki_odometry.x, &pose2d_sparki_odometry.y)
+      int m
+      int n
+      vertex_index_to_ij(path[path_index], &m, &n)
+      if m < i:
+        pose2d_sparki_odometry.theta = change_to_radians(0)
+      if m > i:
+        pose2d_sparki_odometry.theta = change_to_radians(180)
+      if n < j:
+        pose2d_sparki_odometry.theta = change_to_radians(90)
+      if n > j:
+        pose2d_sparki_odometry.theta = change_to_radians(-90)
+
+      subscriber_state = NEXT_PART_POSE
+
+      path_index++
+      if path[path_index] == -1:
+        subscriber_state = STOP
+
+    case NEXT_PART_POSE:
+    #finding if robot is at destination
+      if pose2d_sparki_odometry.x != g_dest_coordinates.x && pose2d_sparki_odometry.y != g_dest_coordinates.y:
+        subscriber_state = PATH_FOUND
+
+   }
+
+  
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Dijkstra on image file")
