@@ -2,6 +2,7 @@ import copy
 import math
 import random
 import argparse
+import numpy as np 
 from PIL import Image
 import numpy as np
 from pprint import pprint
@@ -430,7 +431,9 @@ def callback_update_state(data):
 def lab_6(args):
   #Set everything up
   global publisher_odom, pose2d_sparki_odometry
-  global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP
+  global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP, g_MAP_RESOLUTION_X, g_MAP_RESOLUTION_Y
+  g_MAP_RESOLUTION_X = .05
+  g_MAP_RESOLUTION_Y = .05
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
   publisher_odom = rospy.Publisher('/sparki/set_odometry', Pose2D, queue_size=10)
   init()
@@ -440,6 +443,9 @@ def lab_6(args):
   start = Pose2D();
   start.x = g_src_coordinates[0]
   start.y = g_src_coordinates[1]
+
+  pose2d_sparki_odometry.x = start.x
+  pose2d_sparki_odometry.y = start.y
 
   publisher_odom.publish(start)
   publisher_render.publish(Empty())
@@ -483,89 +489,81 @@ def lab_6(args):
       print(path[0])
   else:
     print("ERROR: NO POSSIBLE PATH")
-  #Set the waypoints
-  
+  #Convert prev to coordinates
+  waypoints = []
+  for item in path:
+    i, j = vertex_index_to_ij(item)
+    x, y = ij_coordinates_to_xy_coordinates(i, j)
+    waypoints.append(tuple((x, y)))
   #Iterate over waypoints
+  print(waypoints)
+  for item in waypoints:
+    print("Destination is", item)
+    print("Current location is", pose2d_sparki_odometry.x, pose2d_sparki_odometry.y)
+    navigate_to(item)
 
+def updateDistance(pose_x, pose_y, dest_pose_x, dest_pose_y):
+  return math.sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_y, 2));
+def correctTheta(raw):
+  while(raw > math.pi):
+    raw -= math.pi
+  while(raw < 0):
+    raw += math.pi
+  return raw
+def navigate_to((dest_pose_x, dest_pose_y)):
+  global pose2d_sparki_odometry
+  publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)
+  rate = rospy.Rate(1.0/0.1)
+  pose_x = pose2d_sparki_odometry.x
+  pose_y = pose2d_sparki_odometry.y
+  pose_theta = correctTheta(pose2d_sparki_odometry.theta)
+  distance = updateDistance(pose_x, pose_y, dest_pose_x, dest_pose_y)
+  while (distance > .005):
+    use = [(dest_pose_y - pose_y) / (dest_pose_x - pose_x)]
+    goal_angle = correctTheta(np.arctan(use)[0])
+    while(abs(goal_angle - pose_theta) > math.pi/50):
+      print("Goal angle: ", goal_angle)
+      print("Current angle: ", pose_theta)
+      wheelRotation([0, 0, 1])
+      rate.sleep()
+      wheelRotation([0, 0, 0])
+      publisher_render.publish(Empty())
+      pose_x = pose2d_sparki_odometry.x
+      pose_y = pose2d_sparki_odometry.y
+      pose_theta = correctTheta(pose2d_sparki_odometry.theta)
+    print("Destination: ", dest_pose_x, dest_pose_y)
+    print("Current Location: ", pose_x, pose_y)
+    print("Distance: ", distance)
+    wheelRotation([1, 0, 0])
+    rate.sleep()
+    wheelRotation([0, 0, 0])
+    publisher_render.publish(Empty())
+    pose_x = pose2d_sparki_odometry.x
+    pose_y = pose2d_sparki_odometry.y
+    pose_theta = correctTheta(pose2d_sparki_odometry.theta)
+    distance = updateDistance(pose_x, pose_y, dest_pose_x, dest_pose_y)
 
+def wheelRotation(value_array):
+  global publisher_motor
+  motor_message = Float32MultiArray()
 
-    #IK helper functions and variables
-
-
-
-
-# Lab 6 IK variables
-int prev = NULL
-int path = NULL
-motor_message = Float32MultiArray()
-
-def wheelRotation():
+  moveForward = value_array[0]
   moveLeft = value_array[1]
-  moveForward = vaule_array[2]
-  moveRight = value_array[3]
+  moveRight = value_array[2]
 
-  if(moveForward < change_to_radians(1)):
+  if(moveForward == 1):
     motor_message.data = [1.0, 1.0]
-  elif(moveLeft < -change_to_radians(1)):
+  elif(moveLeft == 1):
     motor_message.data = [-1.0, 1.0] #moving left wheel backwards to turn left
-  elif(motorRight > change_to_radians(1)):
+  elif(moveRight == 1):
     motor_message.data = [1.0, -1.0] # moving right wheel backwards to turn right
+  else:
+    motor_message.data =  [0, 0]
 
   publisher_motor.publish(motor_message)
-  msg = Empty()
-  publisher_ping.publish(msg)
 
-def change_to_radians(int deg):
+def change_to_radians(deg):
    return deg * (3.14159 / 180)
-
-float deg_error = 0.
-
-
-def loop():
-   long begin = millis()
-   long end = 0
-   int path_index = 0
-
-   callback_update_odometry(data)
-
-   switch(subscriber_state){
-    case START:
-      prev = run_dijkstra(world_map, ij_coordinates_to_xy_coordinates(0, 0))
-      path = reconstruct_path(prev, ij_coordinates_to_xy_coordinates(0, 0), xy_coordinates_to_ij_coordinates(0, 0))
-      if path[0] == ij_coordinates_to_xy_coordinates(0, 0):
-        subsctiber_state = PATH_FOUND
-
-    case PATH_FOUND:
-      int i
-      int j
-      vertex_index_to_ij(path[path_index + 1], &i, &j)
-      ij_coordinates_to_xy_coordinates(i, j, &pose2d_sparki_odometry.x, &pose2d_sparki_odometry.y)
-      int m
-      int n
-      vertex_index_to_ij(path[path_index], &m, &n)
-      if m < i:
-        pose2d_sparki_odometry.theta = change_to_radians(0)
-      if m > i:
-        pose2d_sparki_odometry.theta = change_to_radians(180)
-      if n < j:
-        pose2d_sparki_odometry.theta = change_to_radians(90)
-      if n > j:
-        pose2d_sparki_odometry.theta = change_to_radians(-90)
-
-      subscriber_state = NEXT_PART_POSE
-
-      path_index++
-      if path[path_index] == -1:
-        subscriber_state = STOP
-
-    case NEXT_PART_POSE:
-    #finding if robot is at destination
-      if pose2d_sparki_odometry.x != g_dest_coordinates.x && pose2d_sparki_odometry.y != g_dest_coordinates.y:
-        subscriber_state = PATH_FOUND
-
-   }
-
-  
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Dijkstra on image file")
