@@ -211,12 +211,17 @@ def run_dijkstra(source_vertex):
   for i in range(len(prev)):
     if prev[i] != -1:
       tmp = vertex_index_to_ij(prev[i])
+      """
       if not tmp[1] == (g_NUM_X_CELLS - 1) and not tmp[0] == (g_NUM_Y_CELLS - 1): 
         coord = ((tmp[0]*ratio + ratio/2)/666.66666,(tmp[1]*ratio + ratio/2)/666.66666)
         coords.append(coord)
       else:
         coord = ((tmp[0]*ratio - ratio/2)/666.66666,(tmp[1]*ratio - ratio/2)/666.66666)
         coords.append(coord)
+      """
+      tmp = ij_coordinates_to_xy_coordinates(tmp[0],tmp[1])
+      coord = (tmp[0], 1.2 - tmp[1])
+      coords.append(coord)
     else:
       coords.append(-1)
 
@@ -246,6 +251,8 @@ def reconstruct_path(prev, coords, source_vertex, dest_vertex):
       final_coords.insert(0, coords[current])
       #print(prev)
       #print(current)
+      print("CURRENT: ", current)
+      print("COORD: ", coords[current])
       current = prev[current]
 
   final_path.insert(0,source_vertex)
@@ -399,6 +406,13 @@ def callback_update_state(data):
 def updateDistance(pose_x, pose_y, dest_pose_x, dest_pose_y):
   return math.sqrt(pow(pose_x - dest_pose_x, 2)+ pow(pose_y - dest_pose_y, 2))
 
+def correctTheta(raw):
+  while(raw > math.pi):
+    raw -= math.pi
+  while(raw < 0):
+    raw += math.pi
+  return raw
+
 def lab_6(args):
   global publisher_odom, pose2d_sparki_odometry
   global g_NUM_X_CELLS, g_NUM_Y_CELLS
@@ -482,19 +496,31 @@ def lab_6(args):
   motor_message = Float32MultiArray()#message to be published
   publisher_render = rospy.Publisher('/sparki/render_sim', Empty, queue_size=10)#inititalizes the render publisher
   print(coords_path)
+  tmp = xy_coordinates_to_ij_coordinates(.9,.3)
+  tmp = ij_to_vertex_index(tmp[0],tmp[1])
+  tmp = vertex_index_to_ij(tmp)
+  tmp = ij_coordinates_to_xy_coordinates(tmp[0],tmp[1])
+  print(tmp)
+
   for i in range(1, len(coords_path)):#loop through every coordinate 
     coord = coords_path[i]
     distance = updateDistance(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y, coord[0], coord[1])
-    while  distance > .005: #if sparki isn't within 5mm of target, keep moving
+    while  distance > .02: #if sparki isn't within 5mm of target, keep moving
       distance = updateDistance(pose2d_sparki_odometry.x, pose2d_sparki_odometry.y, coord[0], coord[1])
       goal_theta = math.atan2(coord[1] - pose2d_sparki_odometry.y, coord[0] - pose2d_sparki_odometry.x)
-      while abs(goal_theta - pose2d_sparki_odometry.theta) > .05: #attempting to align sparki in the proper direction
-        
-        if(goal_theta < pose2d_sparki_odometry.theta):
-          motor_message.data = [1.0, 0.0]
-
-        elif(goal_theta > pose2d_sparki_odometry.theta):
-          motor_message.data = [0.0, 1.0]
+      goal_theta = correctTheta(goal_theta)
+      print("GOAL: ", coord)
+      print("ACTUAL: ", pose2d_sparki_odometry)
+      while abs(goal_theta - pose2d_sparki_odometry.theta) > (math.pi/100): #attempting to align sparki in the proper direction
+        #print("GOAL: ", goal_theta)
+        #print("ACTUAL: ", pose2d_sparki_odometry.theta)
+        if pose2d_sparki_odometry.theta >= 6.28:
+          tmp = Pose2D()
+          tmp.x = pose2d_sparki_odometry.x
+          tmp.y = pose2d_sparki_odometry.y
+          tmp.theta = 0
+          publisher_odom.publish(tmp)
+        motor_message.data = [1.0, -1.0]
 
         publisher_motor.publish(motor_message)
         rate.sleep()
@@ -510,6 +536,7 @@ def lab_6(args):
       publisher_render.publish(Empty())
 
   print("\nYou have arrived at your destination")
+  
 
 #CURRENT BUGS
 #If sparki pivots right, his odometry goes negative and will never reach the target
